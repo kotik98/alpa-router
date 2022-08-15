@@ -36,9 +36,6 @@ const Token1 = new Token(
   'Tether USD'
 );
 
-const token1Balance = CurrencyAmount.fromRawAmount(Token0, JSBI.BigInt(ethers.utils.parseUnits('5', 18)))
-const token0Balance = CurrencyAmount.fromRawAmount(Token1, '5000000000')
-
 const poolAddress = '0x4e68Ccd3E89f51C3074ca5072bbAC773960dFa36'
 const poolContract = new ethers.Contract(poolAddress, abi, web3Provider)
 
@@ -78,30 +75,33 @@ async function getPoolState() {
     };
 }
 
-async function swap_and_add() {
+async function swap_and_add(width, token0Balance, token1Balance) {
     const [immutables, state] = await Promise.all([getPoolImmutables(), getPoolState()])
-    console.log(immutables)
-    console.log(state)
+    // console.log(immutables)
+    // console.log(state)
 
     const poolExample = new Pool(
         Token0,
         Token1,
         immutables.fee,
-        state.sqrtPriceX96.toString(),
+        sqrtRatioX96 = state.sqrtPriceX96.toString(),
         state.liquidity.toString(),
         state.tick,
     )
-    console.log(poolExample)
+    // console.log(poolExample)
+
+    const position = new Position({
+        pool: poolExample,
+        tickLower: state.tick - width * immutables.tickSpacing - ((state.tick - width * immutables.tickSpacing) % immutables.tickSpacing),
+        tickUpper: state.tick + width * immutables.tickSpacing + (immutables.tickSpacing - (state.tick + width * immutables.tickSpacing) % immutables.tickSpacing),
+        liquidity: 1,
+    })
+    // console.log(position)
 
     const routeToRatioResponse = await router.routeToRatio(
         token0Balance,
         token1Balance,
-        new Position({
-            poolExample,
-            tickLower: state.tick - 5,
-            tickUpper: state.tick + 5,
-            liquidity: 1,
-        }),
+        position,
         {
             ratioErrorTolerance: new Fraction(1, 100),
             maxIterations: 6,
@@ -133,4 +133,7 @@ async function swap_and_add() {
     await web3Provider.sendTransaction(transaction);
 }
 
-swap_and_add()
+
+const token1Balance = CurrencyAmount.fromRawAmount(Token0, JSBI.BigInt(ethers.utils.parseUnits('5', 18)))
+const token0Balance = CurrencyAmount.fromRawAmount(Token1, '5000000000')
+swap_and_add(5, token0Balance, token1Balance)
