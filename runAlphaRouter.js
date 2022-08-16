@@ -75,7 +75,10 @@ async function getPoolState() {
     };
 }
 
-async function swap_and_add(width, token0Balance, token1Balance) {
+async function swap_and_add(width, token0Amount, token1Amount) {
+    const token0Balance = CurrencyAmount.fromRawAmount(Token0, JSBI.BigInt(ethers.utils.parseUnits(token0Amount, Token0.decimals)))
+    const token1Balance = CurrencyAmount.fromRawAmount(Token1, JSBI.BigInt(ethers.utils.parseUnits(token1Amount, Token1.decimals)))
+
     const [immutables, state] = await Promise.all([getPoolImmutables(), getPoolState()])
     // console.log(immutables)
     // console.log(state)
@@ -117,7 +120,8 @@ async function swap_and_add(width, token0Balance, token1Balance) {
             }
         }
     );
-    console.log(routeToRatioResponse)
+    console.log('routeToRatioResponse.status')
+    console.log(routeToRatioResponse.status)
 
     if (routeToRatioResponse.status == SwapToRatioStatus.success) {
         const route = routeToRatioResponse.result
@@ -130,10 +134,25 @@ async function swap_and_add(width, token0Balance, token1Balance) {
         };
     }
 
-    await web3Provider.sendTransaction(transaction);
+    const wallet = new ethers.Wallet(WALLET_SECRET)
+    const connectedWallet = wallet.connect(web3Provider)
+
+    const approvalAmount0 = ethers.utils.parseUnits(token0Amount, Token0.decimals).toString()
+    const ERC20ABI = require('./abi.json')
+    const contract0 = new ethers.Contract(Token0.address, ERC20ABI, web3Provider)
+    await contract0.connect(connectedWallet).approve(
+        V3_SWAP_ROUTER_ADDRESS,
+        approvalAmount0
+    )
+
+    const approvalAmount1 = ethers.utils.parseUnits(token1Amount, Token1.decimals).toString()
+    const contract1 = new ethers.Contract(Token1.address, ERC20ABI, web3Provider)
+    await contract1.connect(connectedWallet).approve(
+        V3_SWAP_ROUTER_ADDRESS,
+        approvalAmount1
+    )
+
+    await connectedWallet.sendTransaction(transaction);
 }
 
-
-const token1Balance = CurrencyAmount.fromRawAmount(Token0, JSBI.BigInt(ethers.utils.parseUnits('5', 18)))
-const token0Balance = CurrencyAmount.fromRawAmount(Token1, '5000000000')
-swap_and_add(5, token0Balance, token1Balance)
+swap_and_add(5, '1', '1600')
