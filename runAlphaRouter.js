@@ -148,7 +148,7 @@ async function swap_and_add(width, token0Amount, token1Amount) {
             value: BigNumber.from(route.methodParameters.value),
             from: WALLET_ADDRESS,
             gasPrice: BigNumber.from(route.gasPriceWei),
-            gasLimit: 500000
+            gasLimit: BigNumber.from('30000000')
         };
 
         console.log(transaction)
