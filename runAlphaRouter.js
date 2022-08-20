@@ -15,7 +15,7 @@ const WALLET_ADDRESS = process.env.WALLET_ADDRESS
 const WALLET_SECRET = process.env.WALLET_SECRET
 //const INFURA_TEST_URL = process.env.INFURA_TEST_URL
 
-const web3Provider = new ethers.providers.JsonRpcProvider("HTTP://127.0.0.1:7545")
+const web3Provider = new ethers.providers.JsonRpcProvider("HTTP://127.0.0.1:8545")
 const chainId = 1
 
 const router = new AlphaRouter({ chainId: chainId, provider: web3Provider})
@@ -79,6 +79,24 @@ async function swap_and_add(width, token0Amount, token1Amount) {
     const token0Balance = CurrencyAmount.fromRawAmount(Token0, JSBI.BigInt(ethers.utils.parseUnits(token0Amount, Token0.decimals)))
     const token1Balance = CurrencyAmount.fromRawAmount(Token1, JSBI.BigInt(ethers.utils.parseUnits(token1Amount, Token1.decimals)))
 
+    const wallet = new ethers.Wallet(WALLET_SECRET)
+    const connectedWallet = wallet.connect(web3Provider)
+
+    const approvalAmount0 = ethers.utils.parseUnits(token0Amount, Token0.decimals).toString()
+    const ERC20ABI = require('./abi.json')
+    const contract0 = new ethers.Contract(Token0.address, ERC20ABI, web3Provider)
+    await contract0.connect(connectedWallet).approve(
+        V3_SWAP_ROUTER_ADDRESS,
+        approvalAmount0
+    )
+
+    const approvalAmount1 = ethers.utils.parseUnits(token1Amount, Token1.decimals).toString()
+    const contract1 = new ethers.Contract(Token1.address, ERC20ABI, web3Provider)
+    await contract1.connect(connectedWallet).approve(
+        V3_SWAP_ROUTER_ADDRESS,
+        approvalAmount1
+    )
+
     const [immutables, state] = await Promise.all([getPoolImmutables(), getPoolState()])
     // console.log(immutables)
     // console.log(state)
@@ -110,9 +128,9 @@ async function swap_and_add(width, token0Amount, token1Amount) {
             maxIterations: 6,
         },
         {
-            swapConfig: {
+            swapOptions: {
                 recipient: WALLET_ADDRESS,
-                slippage: new Percent(5, 100),
+                slippageTolerance: new Percent(5, 100),
                 deadline: 100
             },
             addLiquidityOptions: {
@@ -120,10 +138,9 @@ async function swap_and_add(width, token0Amount, token1Amount) {
             }
         }
     );
-    console.log('routeToRatioResponse.status')
-    console.log(routeToRatioResponse.status)
+    // console.log(routeToRatioResponse)
 
-    if (routeToRatioResponse.status == SwapToRatioStatus.success) {
+    if (routeToRatioResponse.status === SwapToRatioStatus.SUCCESS) {
         const route = routeToRatioResponse.result
         const transaction = {
             data: route.methodParameters.calldata,
@@ -131,28 +148,13 @@ async function swap_and_add(width, token0Amount, token1Amount) {
             value: BigNumber.from(route.methodParameters.value),
             from: WALLET_ADDRESS,
             gasPrice: BigNumber.from(route.gasPriceWei),
+            gasLimit: 500000
         };
+
+        console.log(transaction)
+        await connectedWallet.sendTransaction(transaction);
     }
 
-    const wallet = new ethers.Wallet(WALLET_SECRET)
-    const connectedWallet = wallet.connect(web3Provider)
-
-    const approvalAmount0 = ethers.utils.parseUnits(token0Amount, Token0.decimals).toString()
-    const ERC20ABI = require('./abi.json')
-    const contract0 = new ethers.Contract(Token0.address, ERC20ABI, web3Provider)
-    await contract0.connect(connectedWallet).approve(
-        V3_SWAP_ROUTER_ADDRESS,
-        approvalAmount0
-    )
-
-    const approvalAmount1 = ethers.utils.parseUnits(token1Amount, Token1.decimals).toString()
-    const contract1 = new ethers.Contract(Token1.address, ERC20ABI, web3Provider)
-    await contract1.connect(connectedWallet).approve(
-        V3_SWAP_ROUTER_ADDRESS,
-        approvalAmount1
-    )
-
-    await connectedWallet.sendTransaction(transaction);
 }
 
-swap_and_add(5, '1', '1600')
+swap_and_add(5, '10', '0')
