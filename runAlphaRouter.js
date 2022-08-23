@@ -15,28 +15,28 @@ const WALLET_ADDRESS = process.env.WALLET_ADDRESS
 const WALLET_SECRET = process.env.WALLET_SECRET
 //const INFURA_TEST_URL = process.env.INFURA_TEST_URL
 
-const web3Provider = new ethers.providers.JsonRpcProvider("HTTP://127.0.0.1:8545")
-const chainId = 1
+const web3Provider = new ethers.providers.JsonRpcProvider("https://polygon-mainnet.g.alchemy.com/v2/6aCuWP8Oxcd-4jvmNYLh-WervViwIeJq")
+const chainId = 137
 
 const router = new AlphaRouter({ chainId: chainId, provider: web3Provider})
 
 const Token0 = new Token(
   chainId,
-  '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+  '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
   18,
-  'WETH',
-  'Wrapped Ether'
+  'WMATIC',
+  'Wrapped Matic'
 );
 
 const Token1 = new Token(
   chainId,
-  '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+  '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
   6,
   'USDT',
   'Tether USD'
 );
 
-const poolAddress = '0x4e68Ccd3E89f51C3074ca5072bbAC773960dFa36'
+const poolAddress = '0x9B08288C3Be4F62bbf8d1C20Ac9C5e6f9467d8B7'
 const poolContract = new ethers.Contract(poolAddress, abi, web3Provider)
 
 async function getPoolImmutables() {
@@ -82,21 +82,6 @@ async function swap_and_add(width, token0Amount, token1Amount) {
     const wallet = new ethers.Wallet(WALLET_SECRET)
     const connectedWallet = wallet.connect(web3Provider)
 
-    const approvalAmount0 = ethers.utils.parseUnits(token0Amount, Token0.decimals).toString()
-    const ERC20ABI = require('./abi.json')
-    const contract0 = new ethers.Contract(Token0.address, ERC20ABI, web3Provider)
-    await contract0.connect(connectedWallet).approve(
-        V3_SWAP_ROUTER_ADDRESS,
-        approvalAmount0
-    )
-
-    const approvalAmount1 = ethers.utils.parseUnits(token1Amount, Token1.decimals).toString()
-    const contract1 = new ethers.Contract(Token1.address, ERC20ABI, web3Provider)
-    await contract1.connect(connectedWallet).approve(
-        V3_SWAP_ROUTER_ADDRESS,
-        approvalAmount1
-    )
-
     const [immutables, state] = await Promise.all([getPoolImmutables(), getPoolState()])
     // console.log(immutables)
     // console.log(state)
@@ -140,21 +125,47 @@ async function swap_and_add(width, token0Amount, token1Amount) {
     );
     // console.log(routeToRatioResponse)
 
+    // const route = routeToRatioResponse.result
+    // console.log(route.gasPriceWei.toBigInt())
+    // console.log(BigNumber.from(route.gasPriceWei.toBigInt() * 2n))
+
     if (routeToRatioResponse.status === SwapToRatioStatus.SUCCESS) {
         const route = routeToRatioResponse.result
+
+        // const approvalAmount0 = ethers.utils.parseUnits(token0Amount, Token0.decimals).toString()
+        // const ERC20ABI = require('./abi.json')
+        // const contract0 = new ethers.Contract(Token0.address, ERC20ABI, web3Provider)
+        // await contract0.connect(connectedWallet).approve(
+        //     V3_SWAP_ROUTER_ADDRESS,
+        //     approvalAmount0,
+        //     {
+        //         gasPrice: BigNumber.from(route.gasPriceWei.toBigInt() * 2n),
+        //     }
+        // )
+        //
+        // const approvalAmount1 = ethers.utils.parseUnits(token1Amount, Token1.decimals).toString()
+        // const contract1 = new ethers.Contract(Token1.address, ERC20ABI, web3Provider)
+        // await contract1.connect(connectedWallet).approve(
+        //     V3_SWAP_ROUTER_ADDRESS,
+        //     approvalAmount1,
+        //     {
+        //         gasPrice: BigNumber.from(route.gasPriceWei.toBigInt() * 2n),
+        //     }
+        // )
+
         const transaction = {
             data: route.methodParameters.calldata,
             to: V3_SWAP_ROUTER_ADDRESS,
             value: BigNumber.from(route.methodParameters.value),
             from: WALLET_ADDRESS,
-            gasPrice: BigNumber.from(route.gasPriceWei),
-            gasLimit: BigNumber.from('30000000')
+            gasPrice: BigNumber.from(route.gasPriceWei.toBigInt() * 10n),
+            gasLimit: BigNumber.from('1000000')
         };
 
-        console.log(transaction)
+        // console.log(transaction)
         await connectedWallet.sendTransaction(transaction);
     }
 
 }
 
-swap_and_add(5, '10', '0')
+swap_and_add(5, '2', '0')
