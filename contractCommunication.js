@@ -55,6 +55,9 @@ const poolAddress = '0x9B08288C3Be4F62bbf8d1C20Ac9C5e6f9467d8B7'
 // );
 // const poolAddress = '0x4e68Ccd3E89f51C3074ca5072bbAC773960dFa36'
 
+const ERC20ABI = require('./ERC20ABI.json')
+const token0Contract = new ethers.Contract(Token0.address, ERC20ABI, web3Provider)
+const token1Contract = new ethers.Contract(Token1.address, ERC20ABI, web3Provider)
 
 const router = new AlphaRouter({ chainId: chainId, provider: web3Provider})
 
@@ -96,7 +99,7 @@ async function getPoolState() {
     };
 }
 
-async function swap_and_add(width, token0Amount, token1Amount) {
+async function swapAndAdd(width, token0Amount, token1Amount) {
     const token0Balance = CurrencyAmount.fromRawAmount(Token0, JSBI.BigInt(ethers.utils.parseUnits(token0Amount, Token0.decimals)))
     const token1Balance = CurrencyAmount.fromRawAmount(Token1, JSBI.BigInt(ethers.utils.parseUnits(token1Amount, Token1.decimals)))
 
@@ -137,7 +140,7 @@ async function swap_and_add(width, token0Amount, token1Amount) {
             swapOptions: {
                 recipient: WALLET_ADDRESS,
                 slippageTolerance: new Percent(10, 100),
-                deadline: Math.round(Date.now() / 1000) + 120,
+                deadline: Math.round(Date.now() / 1000) + 300,
             },
             addLiquidityOptions: {
                 recipient: WALLET_ADDRESS
@@ -145,30 +148,28 @@ async function swap_and_add(width, token0Amount, token1Amount) {
         }
     );
     // console.log(routeToRatioResponse)
-
+    const url = 'https://gasstation-mainnet.matic.network/v2';
+    const gasPrice = await getGasPrice(url);
 
     if (routeToRatioResponse.status === SwapToRatioStatus.SUCCESS) {
         const route = routeToRatioResponse.result
 
         const approvalAmount0 = ethers.utils.parseUnits((token0Amount).toString(), Token0.decimals).toString()
-        const ERC20ABI = require('./ERC20ABI.json')
-        const contract0 = new ethers.Contract(Token0.address, ERC20ABI, web3Provider)
-        await contract0.connect(connectedWallet).approve(
+        await token0Contract.connect(connectedWallet).approve(
             V3_SWAP_ROUTER_ADDRESS,
             approvalAmount0,
             {
-                gasPrice: BigNumber.from(route.gasPriceWei),
+                gasPrice: gasPrice,
                 gasLimit: BigNumber.from('100000')
             }
         )
 
         const approvalAmount1 = ethers.utils.parseUnits((token1Amount).toString(), Token1.decimals).toString()
-        const contract1 = new ethers.Contract(Token1.address, ERC20ABI, web3Provider)
-        await contract1.connect(connectedWallet).approve(
+        await token1Contract.connect(connectedWallet).approve(
             V3_SWAP_ROUTER_ADDRESS,
             approvalAmount1,
             {
-                gasPrice: BigNumber.from(route.gasPriceWei),
+                gasPrice: gasPrice,
                 gasLimit: BigNumber.from('100000')
             }
         )
@@ -178,22 +179,24 @@ async function swap_and_add(width, token0Amount, token1Amount) {
             to: V3_SWAP_ROUTER_ADDRESS,
             value: BigNumber.from(route.methodParameters.value),
             from: WALLET_ADDRESS,
-            gasPrice: BigNumber.from(route.gasPriceWei),
+            gasPrice: gasPrice,
             gasLimit: BigNumber.from('1000000')
         };
 
-        console.log(await connectedWallet.sendTransaction(transaction));
+        return await connectedWallet.sendTransaction(transaction).then(function(transaction) {
+            return transaction.wait();
+        })
     }
 
 }
 
-async function get_gas_price(url){
+async function getGasPrice(url){
     return await fetch(url)
         .then(response => response.json())
         .then(json => (BigNumber.from(Math.round(json.standard.maxFee * (10 ** 9)))))
 }
 
-async function remove_and_burn(){
+async function removeAndBurn(){
     const wallet = new ethers.Wallet(WALLET_SECRET)
     const connectedWallet = wallet.connect(web3Provider)
 
@@ -226,7 +229,7 @@ async function remove_and_burn(){
         tokenId: tokenId,
         liquidityPercentage: new Percent(1),
         slippageTolerance: new Percent(10, 100),
-        deadline: Math.round(Date.now() / 1000) + 120,
+        deadline: Math.round(Date.now() / 1000) + 300,
         burnToken: true,
         collectOptions: {
             expectedCurrencyOwed0: CurrencyAmount.fromRawAmount(Token0, 0),
@@ -237,7 +240,7 @@ async function remove_and_burn(){
     // console.log({calldata, value})
 
     const url = 'https://gasstation-mainnet.matic.network/v2';
-    const gasPrice = await get_gas_price(url);
+    const gasPrice = await getGasPrice(url);
     // console.log(gasPrice)
 
     await NftPosManagerContract.connect(connectedWallet).approve(
@@ -258,10 +261,26 @@ async function remove_and_burn(){
         gasLimit: BigNumber.from('500000')
     };
     // console.log(transaction)
-    console.log(await connectedWallet.sendTransaction(transaction));
+    return await connectedWallet.sendTransaction(transaction).then(function(transaction) {
+        return transaction.wait();
+    })
 
 }
 
-remove_and_burn()
+async function getBalance(tokenContract){
+    return await tokenContract.balanceOf(WALLET_ADDRESS)
+}
 
-// swap_and_add(5, '4', '0')
+module.exports = {
+    Token0,
+    Token1,
+    token0Contract,
+    token1Contract,
+    getPoolImmutables,
+    getPoolState,
+    swapAndAdd,
+    getGasPrice,
+    removeAndBurn,
+    getBalance
+}
+
