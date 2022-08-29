@@ -50,6 +50,7 @@ async function run(args) {
             console.log(lowerTick, upperTick, Date.now(), token0Balance.toString(), token1Balance.toString(), currPrice)
 
             await swapAndAdd(width, (token0Balance / 10 ** Token0.decimals).toString(), (token1Balance / 10 ** Token1.decimals).toString())
+            await timer(5000)
         }
         await timer(15000)
     }
