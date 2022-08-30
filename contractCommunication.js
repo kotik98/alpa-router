@@ -155,25 +155,25 @@ async function swapAndAdd(width, token0Amount, token1Amount) {
     if (routeToRatioResponse.status === SwapToRatioStatus.SUCCESS) {
         const route = routeToRatioResponse.result
 
-        const approvalAmount0 = ethers.utils.parseUnits((token0Amount).toString(), Token0.decimals).toString()
-        await token0Contract.connect(connectedWallet).approve(
-            V3_SWAP_ROUTER_ADDRESS,
-            approvalAmount0,
-            {
-                gasPrice: gasPrice,
-                gasLimit: BigNumber.from('100000')
-            }
-        )
+        // const approvalAmount0 = ethers.utils.parseUnits((token0Amount).toString(), Token0.decimals).toString()
+        // await token0Contract.connect(connectedWallet).approve(
+        //     V3_SWAP_ROUTER_ADDRESS,
+        //     ethers.constants.MaxUint256,
+        //     {
+        //         gasPrice: gasPrice,
+        //         gasLimit: BigNumber.from('100000')
+        //     }
+        // )
 
-        const approvalAmount1 = ethers.utils.parseUnits((token1Amount).toString(), Token1.decimals).toString()
-        await token1Contract.connect(connectedWallet).approve(
-            V3_SWAP_ROUTER_ADDRESS,
-            approvalAmount1,
-            {
-                gasPrice: gasPrice,
-                gasLimit: BigNumber.from('100000')
-            }
-        )
+        // const approvalAmount1 = ethers.utils.parseUnits((token1Amount).toString(), Token1.decimals).toString()
+        // await token1Contract.connect(connectedWallet).approve(
+        //     V3_SWAP_ROUTER_ADDRESS,
+        //     ethers.constants.MaxUint256,
+        //     {
+        //         gasPrice: gasPrice,
+        //         gasLimit: BigNumber.from('100000')
+        //     }
+        // )
 
         const transaction = {
             data: route.methodParameters.calldata,
@@ -272,6 +272,25 @@ async function getBalance(tokenContract){
     return await tokenContract.balanceOf(WALLET_ADDRESS)
 }
 
+async function approveMax(tokenContract) {
+    const wallet = new ethers.Wallet(WALLET_SECRET)
+    const connectedWallet = wallet.connect(web3Provider)
+
+    const url = 'https://gasstation-mainnet.matic.network/v2';
+    const gasPrice = await getGasPrice(url);
+
+    return await tokenContract.connect(connectedWallet).approve(
+        V3_SWAP_ROUTER_ADDRESS,
+        ethers.constants.MaxUint256,
+        {
+            gasPrice: gasPrice,
+            gasLimit: BigNumber.from('100000')
+        }
+    ).then(function(transaction) {
+        return transaction.wait();
+    })
+}
+
 module.exports = {
     Token0,
     Token1,
@@ -282,6 +301,7 @@ module.exports = {
     swapAndAdd,
     getGasPrice,
     removeAndBurn,
-    getBalance
+    getBalance,
+    approveMax
 }
 

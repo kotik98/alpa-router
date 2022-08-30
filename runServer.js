@@ -1,11 +1,10 @@
-const { Token0, Token1, token0Contract, token1Contract, getPoolState, getBalance, getGasPrice, getPoolImmutables, swapAndAdd, removeAndBurn } = require('./contractCommunication');
+const { Token0, Token1, token0Contract, token1Contract, getPoolState, getBalance, getGasPrice, getPoolImmutables, swapAndAdd, removeAndBurn, approveMax } = require('./contractCommunication');
 
 var fs = require('fs');
 var util = require('util');
 var logFile = fs.createWriteStream('log.txt', { flags: 'a' });
   // Or 'w' to truncate the file every time the process starts.
 var logStdout = process.stdout;
-
 console.log = function () {
   logFile.write(util.format.apply(null, arguments) + '\n');
   logStdout.write(util.format.apply(null, arguments) + '\n');
@@ -13,6 +12,7 @@ console.log = function () {
 console.error = console.log;
 
 var args = process.argv.slice(2);
+
 const timer = ms => new Promise(res => setTimeout(res, ms)) 
 
 function priceToTick(price) {
@@ -21,8 +21,11 @@ function priceToTick(price) {
     return Math.round(tick_id, 0)
 }
 
-async function run(args) {
-    // args: [ width ]
+async function run(args) {  // args: [ width ]
+
+    await approveMax(token0Contract)
+    await approveMax(token1Contract)
+
     let token0Balance = await getBalance(token0Contract)
     let token1Balance = await getBalance(token1Contract)
     let poolState = await getPoolState()
@@ -34,7 +37,7 @@ async function run(args) {
     console.log(lowerTick, upperTick, Date.now(), token0Balance.toString(), token1Balance.toString(), currPrice)
 
     await swapAndAdd(width, (token0Balance / 10 ** Token0.decimals).toString(), (token1Balance / 10 ** Token1.decimals).toString())
-    await timer(15000) 
+    await timer(20000) 
 
     while (true){
         let poolState = await getPoolState()
