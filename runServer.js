@@ -23,8 +23,8 @@ function priceToTick(price) {
 
 async function run(args) {  // args: [ width ]
 
-    await approveMax(token0Contract)
-    await approveMax(token1Contract)
+    // await approveMax(token0Contract)
+    // await approveMax(token1Contract)
 
     let token0Balance = await getBalance(token0Contract)
     let token1Balance = await getBalance(token1Contract)
@@ -40,20 +40,19 @@ async function run(args) {  // args: [ width ]
     await timer(20000) 
 
     while (true){
-        let poolState = await getPoolState()
-        let currPrice = poolState.sqrtPriceX96 * poolState.sqrtPriceX96 * (10 ** Token0.decimals) / (10 ** Token1.decimals) / 2 ** 192
+        poolState = await getPoolState()
+        currPrice = poolState.sqrtPriceX96 * poolState.sqrtPriceX96 * (10 ** Token0.decimals) / (10 ** Token1.decimals) / 2 ** 192
 
         if (upperTick < priceToTick(currPrice) || priceToTick(currPrice) < lowerTick) {
             await removeAndBurn()
-            let token0Balance = await getBalance(token0Contract)
-            let token1Balance = await getBalance(token1Contract)
-            let lowerTick = priceToTick(currPrice * ((100 - Number(args[0])) / 100))
-            let upperTick = priceToTick(currPrice * ((100 + Number(args[0])) / 100))
-            let width = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
+            token0Balance = await getBalance(token0Contract)
+            token1Balance = await getBalance(token1Contract)
+            lowerTick = priceToTick(currPrice * ((100 - Number(args[0])) / 100))
+            upperTick = priceToTick(currPrice * ((100 + Number(args[0])) / 100))
+            width = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
             console.log(lowerTick, upperTick, Date.now(), token0Balance.toString(), token1Balance.toString(), currPrice)
 
             await swapAndAdd(width, (token0Balance / 10 ** Token0.decimals).toString(), (token1Balance / 10 ** Token1.decimals).toString())
-            await timer(5000)
         }
         await timer(15000)
     }

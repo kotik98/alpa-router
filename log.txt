@@ -1,1 +1,19 @@
--278367 -277927 1661844554184 2234068388507462003 2335603 0.8335516729173486
+-278771 -278271 1661870126768 15191981497775175068 28248 0.8030552478063635
+network block skew detected; skipping block events (emitted=32485101 blockNumber32497427)
+-278522 -278021 1661900459613 775660924951303179 11785118 0.8233069181288482
+-278515 -278015 1661900519577 7201943013689462635 6499053 0.8238283617717106
+-278514 -278014 1661900559557 7760137326483363445 6038913 0.8239178360142767
+-278514 -278014 1661900600340 7720277582354438481 6071736 0.8239038632248626
+-278514 -278014 1661900645335 7729015852361936128 6064535 0.8238953858918948
+-278515 -278015 1661900690452 7736920566171897128 6058020 0.823871750031342
+(node:18652) UnhandledPromiseRejectionWarning: Error: call revert exception; VM Exception while processing transaction: reverted with reason string "EnumerableSet: index out of bounds" [ See: https://links.ethers.org/v5-errors-CALL_EXCEPTION ] (method="tokenOfOwnerByIndex(address,uint256)", data="0x08c379a000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000022456e756d657261626c655365743a20696e646578206f7574206f6620626f756e6473000000000000000000000000000000000000000000000000000000000000", errorArgs=["EnumerableSet: index out of bounds"], errorName="Error", errorSignature="Error(string)", reason="EnumerableSet: index out of bounds", code=CALL_EXCEPTION, version=abi/5.6.4)
+    at Logger.makeError (C:\Users\zahar\Desktop\product pilot\alpa-router\node_modules\@ethersproject\logger\lib\index.js:233:21)
+    at Logger.throwError (C:\Users\zahar\Desktop\product pilot\alpa-router\node_modules\@ethersproject\logger\lib\index.js:242:20)
+    at Interface.decodeFunctionResult (C:\Users\zahar\Desktop\product pilot\alpa-router\node_modules\@ethersproject\abi\lib\interface.js:388:23)
+    at Contract.<anonymous> (C:\Users\zahar\Desktop\product pilot\alpa-router\node_modules\@ethersproject\contracts\lib\index.js:395:56)
+    at step (C:\Users\zahar\Desktop\product pilot\alpa-router\node_modules\@ethersproject\contracts\lib\index.js:48:23)
+    at Object.next (C:\Users\zahar\Desktop\product pilot\alpa-router\node_modules\@ethersproject\contracts\lib\index.js:29:53)
+    at fulfilled (C:\Users\zahar\Desktop\product pilot\alpa-router\node_modules\@ethersproject\contracts\lib\index.js:20:58)
+    at processTicksAndRejections (internal/process/task_queues.js:97:5)
+(node:18652) UnhandledPromiseRejectionWarning: Unhandled promise rejection. This error originated either by throwing inside of an async function without a catch block, or by rejecting a promise which was not handled with .catch(). To terminate the node process on unhandled promise rejection, use the CLI flag `--unhandled-rejections=strict` (see https://nodejs.org/api/cli.html#cli_unhandled_rejections_mode). (rejection id: 7)
+(node:18652) [DEP0018] DeprecationWarning: Unhandled promise rejections are deprecated. In the future, promise rejections that are not handled will terminate the Node.js process with a non-zero exit code.
