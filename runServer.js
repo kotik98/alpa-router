@@ -36,23 +36,48 @@ async function run(args) {  // args: [ width ]
     let width = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
     console.log(lowerTick, upperTick, Date.now(), token0Balance.toString(), token1Balance.toString(), currPrice)
 
-    await swapAndAdd(width, (token0Balance / 10 ** Token0.decimals).toString(), (token1Balance / 10 ** Token1.decimals).toString())
-    await timer(20000) 
+    let doLoop = true; 
+    do { 
+        try {
+            await swapAndAdd(width, (token0Balance / 10 ** Token0.decimals).toString(), (token1Balance / 10 ** Token1.decimals).toString())
+            await timer(15000)
+            doLoop = false; 
+        } catch (err) {
+            console.log(err)
+        }
+    } while (doLoop)
 
     while (true){
         poolState = await getPoolState()
         currPrice = poolState.sqrtPriceX96 * poolState.sqrtPriceX96 * (10 ** Token0.decimals) / (10 ** Token1.decimals) / 2 ** 192
 
         if (upperTick < priceToTick(currPrice) || priceToTick(currPrice) < lowerTick) {
-            await removeAndBurn()
-            token0Balance = await getBalance(token0Contract)
-            token1Balance = await getBalance(token1Contract)
-            lowerTick = priceToTick(currPrice * ((100 - Number(args[0])) / 100))
-            upperTick = priceToTick(currPrice * ((100 + Number(args[0])) / 100))
-            width = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
-            console.log(lowerTick, upperTick, Date.now(), token0Balance.toString(), token1Balance.toString(), currPrice)
+          doLoop = true; 
+          do { 
+              try {
+                  await removeAndBurn()
+                  doLoop = false; 
+              } catch (err) {
+                  console.log(err)
+              }
+          } while (doLoop)
 
-            await swapAndAdd(width, (token0Balance / 10 ** Token0.decimals).toString(), (token1Balance / 10 ** Token1.decimals).toString())
+          token0Balance = await getBalance(token0Contract)
+          token1Balance = await getBalance(token1Contract)
+          lowerTick = priceToTick(currPrice * ((100 - Number(args[0])) / 100))
+          upperTick = priceToTick(currPrice * ((100 + Number(args[0])) / 100))
+          width = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
+          console.log(lowerTick, upperTick, Date.now(), token0Balance.toString(), token1Balance.toString(), currPrice)
+          
+          doLoop = true; 
+          do { 
+              try {
+                  await swapAndAdd(width, (token0Balance / 10 ** Token0.decimals).toString(), (token1Balance / 10 ** Token1.decimals).toString())
+                  doLoop = false; 
+              } catch (err) {
+                  console.log(err)
+              }
+          } while (doLoop)
         }
         await timer(15000)
     }
