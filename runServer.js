@@ -59,6 +59,6 @@ async function run(args) {  // args: [ width ]
     }
 }
 
-run(args)
+//run(args)
 
-// removeAndBurn()
+removeAndBurn()
