@@ -2,7 +2,7 @@ const { Token0, Token1, token0Contract, token1Contract, getPoolState, getBalance
 
 var fs = require('fs');
 var util = require('util');
-var logFile = fs.createWriteStream('log.txt', { flags: 'a' });
+var logFile = fs.createWriteStream('log.txt', { flags: 'w' });
   // Or 'w' to truncate the file every time the process starts.
 var logStdout = process.stdout;
 console.log = function () {
@@ -21,7 +21,7 @@ function priceToTick(price) {
     return Math.round(tick_id, 0)
 }
 
-async function run(args) {  // args: [ width ]
+async function run(args) {  // args: [ width in percentage ]
 
     // await approveMax(token0Contract)
     // await approveMax(token1Contract)
@@ -31,10 +31,12 @@ async function run(args) {  // args: [ width ]
     let poolState = await getPoolState()
     let poolImmutables = await getPoolImmutables()
     let currPrice = poolState.sqrtPriceX96 * poolState.sqrtPriceX96 * (10 ** Token0.decimals) / (10 ** Token1.decimals) / 2 ** 192
-    let lowerTick = priceToTick(currPrice * ((100 - Number(args[0])) / 100))
-    let upperTick = priceToTick(currPrice * ((100 + Number(args[0])) / 100))
+    let lowerTick = priceToTick(currPrice * ((100 - Number(args)) / 100))
+    let upperTick = priceToTick(currPrice * ((100 + Number(args)) / 100))
+    let lowerPrice = currPrice * ((100 - Number(args)) / 100)
+    let upperPrice = currPrice * ((100 + Number(args)) / 100)
     let width = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
-    console.log(lowerTick, upperTick, Date.now(), token0Balance.toString(), token1Balance.toString(), currPrice)
+    console.log(lowerPrice, upperPrice, Date.now(), Number(token0Balance) / (10 ** Token0.decimals), Number(token1Balance) /(10 ** Token1.decimals), currPrice)
 
     let doLoop = true; 
     do { 
@@ -64,10 +66,12 @@ async function run(args) {  // args: [ width ]
 
           token0Balance = await getBalance(token0Contract)
           token1Balance = await getBalance(token1Contract)
-          lowerTick = priceToTick(currPrice * ((100 - Number(args[0])) / 100))
-          upperTick = priceToTick(currPrice * ((100 + Number(args[0])) / 100))
+          lowerTick = priceToTick(currPrice * ((100 - Number(args)) / 100))
+          upperTick = priceToTick(currPrice * ((100 + Number(args)) / 100))
+          let lowerPrice = currPrice * ((100 - Number(args)) / 100)
+          let upperPrice = currPrice * ((100 + Number(args)) / 100)
           width = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
-          console.log(lowerTick, upperTick, Date.now(), token0Balance.toString(), token1Balance.toString(), currPrice)
+          console.log(lowerPrice, upperPrice, Date.now(), token0Balance.toString() / Token0.decimals, token1Balance.toString() / Token1.decimals, currPrice)
           
           doLoop = true; 
           do { 
@@ -83,6 +87,6 @@ async function run(args) {  // args: [ width ]
     }
 }
 
-//run(args)
+run(args)
 
-removeAndBurn()
+//removeAndBurn()
