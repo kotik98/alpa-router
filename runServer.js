@@ -44,6 +44,7 @@ async function run(args) {  // args: [ width ]
             doLoop = false; 
         } catch (err) {
             console.log(err)
+            await timer(120000)
         }
     } while (doLoop)
 
@@ -59,6 +60,7 @@ async function run(args) {  // args: [ width ]
                   doLoop = false; 
               } catch (err) {
                   console.log(err)
+                  await timer(120000)
               }
           } while (doLoop)
 
@@ -76,6 +78,7 @@ async function run(args) {  // args: [ width ]
                   doLoop = false; 
               } catch (err) {
                   console.log(err)
+                  await timer(120000)
               }
           } while (doLoop)
         }
