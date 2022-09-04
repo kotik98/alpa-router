@@ -2,7 +2,7 @@ const { Token0, Token1, token0Contract, token1Contract, getPoolState, getBalance
 
 var fs = require('fs');
 var util = require('util');
-var logFile = fs.createWriteStream('log.txt', { flags: 'w' });
+var logFile = fs.createWriteStream('log.txt', { flags: 'a' });
   // Or 'w' to truncate the file every time the process starts.
 var logStdout = process.stdout;
 console.log = function () {
@@ -21,27 +21,31 @@ function priceToTick(price) {
     return Math.round(tick_id, 0)
 }
 
-async function run(args) {  // args: [ width in percentage ]
+async function run(args) {  // args: [ width_in_percentage, WALLET_ADDRESS, WALLET_SECRET ]
 
-    // await approveMax(token0Contract)
-    // await approveMax(token1Contract)
+    const WALLET_ADDRESS = args[1]
+    const WALLET_SECRET = args[2]
 
-    let token0Balance = await getBalance(token0Contract)
-    let token1Balance = await getBalance(token1Contract)
+    // раскомментить при первом вызове
+    // await approveMax(token0Contract, WALLET_SECRET)
+    // await approveMax(token1Contract, WALLET_SECRET)
+
+    let token0Balance = await getBalance(token0Contract, WALLET_ADDRESS)
+    let token1Balance = await getBalance(token1Contract, WALLET_ADDRESS)
     let poolState = await getPoolState()
     let poolImmutables = await getPoolImmutables()
     let currPrice = poolState.sqrtPriceX96 * poolState.sqrtPriceX96 * (10 ** Token0.decimals) / (10 ** Token1.decimals) / 2 ** 192
-    let lowerTick = priceToTick(currPrice * ((100 - Number(args)) / 100))
-    let upperTick = priceToTick(currPrice * ((100 + Number(args)) / 100))
-    let lowerPrice = currPrice * ((100 - Number(args)) / 100)
-    let upperPrice = currPrice * ((100 + Number(args)) / 100)
+    let lowerTick = priceToTick(currPrice * ((100 - Number(args[0])) / 100))
+    let upperTick = priceToTick(currPrice * ((100 + Number(args[0])) / 100))
+    let lowerPrice = currPrice * ((100 - Number(args[0])) / 100)
+    let upperPrice = currPrice * ((100 + Number(args[0])) / 100)
     let width = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
     console.log(lowerPrice, upperPrice, Date.now(), Number(token0Balance) / (10 ** Token0.decimals), Number(token1Balance) /(10 ** Token1.decimals), currPrice)
 
     let doLoop = true; 
     do { 
         try {
-            await swapAndAdd(width, (token0Balance / 10 ** Token0.decimals).toString(), (token1Balance / 10 ** Token1.decimals).toString())
+            await swapAndAdd(width, (token0Balance / 10 ** Token0.decimals).toString(), (token1Balance / 10 ** Token1.decimals).toString(), WALLET_ADDRESS, WALLET_SECRET)
             await timer(15000)
             doLoop = false; 
         } catch (err) {
@@ -58,7 +62,7 @@ async function run(args) {  // args: [ width in percentage ]
           doLoop = true; 
           do { 
               try {
-                  await removeAndBurn()
+                  await removeAndBurn(WALLET_ADDRESS, WALLET_SECRET)
                   doLoop = false; 
               } catch (err) {
                   console.log(err)
@@ -66,19 +70,19 @@ async function run(args) {  // args: [ width in percentage ]
               }
           } while (doLoop)
 
-          token0Balance = await getBalance(token0Contract)
-          token1Balance = await getBalance(token1Contract)
-          lowerTick = priceToTick(currPrice * ((100 - Number(args)) / 100))
-          upperTick = priceToTick(currPrice * ((100 + Number(args)) / 100))
-          let lowerPrice = currPrice * ((100 - Number(args)) / 100)
-          let upperPrice = currPrice * ((100 + Number(args)) / 100)
+          token0Balance = await getBalance(token0Contract, WALLET_ADDRESS)
+          token1Balance = await getBalance(token1Contract, WALLET_ADDRESS)
+          lowerTick = priceToTick(currPrice * ((100 - Number(args[0])) / 100))
+          upperTick = priceToTick(currPrice * ((100 + Number(args[0])) / 100))
+          let lowerPrice = currPrice * ((100 - Number(args[0])) / 100)
+          let upperPrice = currPrice * ((100 + Number(args[0])) / 100)
           width = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
           console.log(lowerPrice, upperPrice, Date.now(), token0Balance.toString() / Token0.decimals, token1Balance.toString() / Token1.decimals, currPrice)
           
           doLoop = true; 
           do { 
               try {
-                  await swapAndAdd(width, (token0Balance / 10 ** Token0.decimals).toString(), (token1Balance / 10 ** Token1.decimals).toString())
+                  await swapAndAdd(width, (token0Balance / 10 ** Token0.decimals).toString(), (token1Balance / 10 ** Token1.decimals).toString(), WALLET_ADDRESS, WALLET_SECRET)
                   doLoop = false; 
               } catch (err) {
                   console.log(err)
