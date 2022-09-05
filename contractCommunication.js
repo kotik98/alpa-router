@@ -13,7 +13,7 @@ const fetch = require("node-fetch"); // node-fetch@1.7.3
 const V3_SWAP_ROUTER_ADDRESS = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45";
 const V3_NFT_POS_MANAGER_ADDRESS = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
 
-require('dotenv').config()
+// require('dotenv').config()
 // const WALLET_ADDRESS = process.env.WALLET_ADDRESS
 // const WALLET_SECRET = process.env.WALLET_SECRET
 // const ALCHEMY_API = process.env.ALCHEMY_API
