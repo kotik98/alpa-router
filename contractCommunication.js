@@ -16,10 +16,10 @@ const V3_NFT_POS_MANAGER_ADDRESS = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
 require('dotenv').config()
 // const WALLET_ADDRESS = process.env.WALLET_ADDRESS
 // const WALLET_SECRET = process.env.WALLET_SECRET
-const ALCHEMY_API = process.env.ALCHEMY_API
+// const ALCHEMY_API = process.env.ALCHEMY_API
 
 // polygon
-const web3Provider = new ethers.providers.JsonRpcProvider(ALCHEMY_API)
+const web3Provider = new ethers.providers.JsonRpcProvider('https://polygon-mainnet.g.alchemy.com/v2/6aCuWP8Oxcd-4jvmNYLh-WervViwIeJq')
 const chainId = 137
 const Token0 = new Token(
   chainId,
