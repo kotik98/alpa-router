@@ -40,7 +40,7 @@ async function run(args) {  // args: [ width_in_percentage, WALLET_ADDRESS, WALL
     let lowerPrice = currPrice * ((100 - Number(args[0])) / 100)
     let upperPrice = currPrice * ((100 + Number(args[0])) / 100)
     let width = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
-    console.log(lowerPrice, upperPrice, Date.now(), Number(token0Balance) / (10 ** Token0.decimals), Number(token1Balance) /(10 ** Token1.decimals), currPrice)
+    console.log(lowerPrice, upperPrice, Date.now(), Number(token0Balance) / (10 ** Token0.decimals), Number(token1Balance) / (10 ** Token1.decimals), currPrice)
 
     let doLoop = true; 
     do { 
@@ -77,7 +77,7 @@ async function run(args) {  // args: [ width_in_percentage, WALLET_ADDRESS, WALL
           let lowerPrice = currPrice * ((100 - Number(args[0])) / 100)
           let upperPrice = currPrice * ((100 + Number(args[0])) / 100)
           width = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
-          console.log(lowerPrice, upperPrice, Date.now(), token0Balance.toString() / Token0.decimals, token1Balance.toString() / Token1.decimals, currPrice)
+          console.log(lowerPrice, upperPrice, Date.now(), Number(token0Balance) / (10 ** Token0.decimals), Number(token1Balance) / (10 ** Token1.decimals), currPrice)
           
           doLoop = true; 
           do { 
