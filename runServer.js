@@ -1,4 +1,8 @@
 const { Token0, Token1, token0Contract, token1Contract, getPoolState, getBalance, getGasPrice, getPoolImmutables, swapAndAdd, removeAndBurn, approveMax } = require('./contractCommunication');
+const { GoogleSpreadsheet } = require('google-spreadsheet');
+const doc = new GoogleSpreadsheet('1xdwWPbW0LhJby-3bQ7SVMnzlS1D5k0yeH4mpEPIq2Qs');
+const creds = require("./credentials.json")
+
 
 var fs = require('fs');
 var util = require('util');
@@ -38,6 +42,12 @@ async function run(args) {  // args: [ width in percentage ]
     let width = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
     console.log(lowerPrice, upperPrice, Date.now(), Number(token0Balance) / (10 ** Token0.decimals), Number(token1Balance) /(10 ** Token1.decimals), currPrice)
 
+    await doc.useServiceAccountAuth(creds); 
+    const sheet = await doc.addSheet({ headerValues: ['lowerBound', 'upperBound', 'UnixTime', 'token0Balance', 'token1Balance', 'currentPrice'] });
+
+    await sheet.addRow({ lowerBound: lowerPrice, upperBound: upperPrice , UnixTime: Date.now(), 
+    token0Balance: Number(token0Balance) / (10 ** Token0.decimals), token1Balance: Number(token1Balance) /(10 ** Token1.decimals), currentPrice: currPrice });
+
     let doLoop = true; 
     do { 
         try {
@@ -71,7 +81,10 @@ async function run(args) {  // args: [ width in percentage ]
           let lowerPrice = currPrice * ((100 - Number(args)) / 100)
           let upperPrice = currPrice * ((100 + Number(args)) / 100)
           width = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
-          console.log(lowerPrice, upperPrice, Date.now(), token0Balance.toString() / Token0.decimals, token1Balance.toString() / Token1.decimals, currPrice)
+          console.log(lowerPrice, upperPrice, Date.now(), Number(token0Balance) / (10 ** Token0.decimals), Number(token1Balance) /(10 ** Token1.decimals), currPrice)
+
+          await sheet.addRow({ lowerBound: lowerPrice, upperBound: upperPrice , UnixTime: Date.now(), 
+          token0Balance: Number(token0Balance) / (10 ** Token0.decimals), token1Balance: Number(token1Balance) /(10 ** Token1.decimals), currentPrice: currPrice });
           
           doLoop = true; 
           do { 
