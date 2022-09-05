@@ -14,8 +14,8 @@ const V3_SWAP_ROUTER_ADDRESS = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45";
 const V3_NFT_POS_MANAGER_ADDRESS = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
 
 require('dotenv').config()
-const WALLET_ADDRESS = process.env.WALLET_ADDRESS
-const WALLET_SECRET = process.env.WALLET_SECRET
+// const WALLET_ADDRESS = process.env.WALLET_ADDRESS
+// const WALLET_SECRET = process.env.WALLET_SECRET
 const ALCHEMY_API = process.env.ALCHEMY_API
 
 // polygon
@@ -100,7 +100,7 @@ async function getPoolState() {
     };
 }
 
-async function swapAndAdd(width, token0Amount, token1Amount) {
+async function swapAndAdd(width, token0Amount, token1Amount, WALLET_ADDRESS, WALLET_SECRET) {
     const token0Balance = CurrencyAmount.fromRawAmount(Token0, JSBI.BigInt(ethers.utils.parseUnits(token0Amount, Token0.decimals)))
     const token1Balance = CurrencyAmount.fromRawAmount(Token1, JSBI.BigInt(ethers.utils.parseUnits(token1Amount, Token1.decimals)))
 
@@ -197,7 +197,7 @@ async function getGasPrice(url){
         .then(json => (BigNumber.from(Math.round(json.standard.maxFee * (10 ** 9)))))
 }
 
-async function removeAndBurn(){
+async function removeAndBurn(WALLET_ADDRESS, WALLET_SECRET){
     const wallet = new ethers.Wallet(WALLET_SECRET)
     const connectedWallet = wallet.connect(web3Provider)
 
@@ -268,11 +268,11 @@ async function removeAndBurn(){
 
 }
 
-async function getBalance(tokenContract){
+async function getBalance(tokenContract, WALLET_ADDRESS){
     return await tokenContract.balanceOf(WALLET_ADDRESS)
 }
 
-async function approveMax(tokenContract) {
+async function approveMax(tokenContract, WALLET_SECRET) {
     const wallet = new ethers.Wallet(WALLET_SECRET)
     const connectedWallet = wallet.connect(web3Provider)
 
