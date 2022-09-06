@@ -134,13 +134,13 @@ async function swapAndAdd(width, token0Amount, token1Amount, WALLET_ADDRESS, WAL
         token1Balance,
         position,
         {
-            ratioErrorTolerance: new Fraction(10, 100),
+            ratioErrorTolerance: new Fraction(5, 100),
             // maxIterations: 10,
         },
         {
             swapOptions: {
                 recipient: WALLET_ADDRESS,
-                slippageTolerance: new Percent(10, 100),
+                slippageTolerance: new Percent(4, 100),
                 deadline: Math.round(Date.now() / 1000) + 300,
             },
             addLiquidityOptions: {
