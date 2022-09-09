@@ -272,7 +272,7 @@ async function getBalance(tokenContract, WALLET_ADDRESS){
     return await tokenContract.balanceOf(WALLET_ADDRESS)
 }
 
-async function approveMax(tokenContract, WALLET_SECRET) {
+async function approveMax(tokenContract, to, WALLET_SECRET) {
     const wallet = new ethers.Wallet(WALLET_SECRET)
     const connectedWallet = wallet.connect(web3Provider)
 
@@ -292,10 +292,13 @@ async function approveMax(tokenContract, WALLET_SECRET) {
 }
 
 module.exports = {
+    V3_SWAP_ROUTER_ADDRESS,
     Token0,
     Token1,
     token0Contract,
     token1Contract,
+    web3Provider,
+    chainId,
     getPoolImmutables,
     getPoolState,
     swapAndAdd,
