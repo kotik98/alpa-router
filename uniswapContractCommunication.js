@@ -2,7 +2,7 @@ const { NonfungiblePositionManager } = require("@uniswap/v3-sdk");
 const { Fraction } = require("@uniswap/sdk");
 const { Position } = require("@uniswap/v3-sdk");
 const { AlphaRouter } = require('@uniswap/smart-order-router');
-const { Token, CurrencyAmount, Percent } = require('@uniswap/sdk-core');
+const { Token, CurrencyAmount, Percent, TradeType } = require('@uniswap/sdk-core');
 const { ethers, BigNumber } = require('ethers');
 const { Pool } = require('@uniswap/v3-sdk');
 const { abi } = require('@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json');
@@ -35,6 +35,13 @@ const Token1 = new Token(
     'USDT',
     'Tether USD'
 );
+const tokenForAAVE = new Token(
+    chainId,
+    '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
+    6,
+    'USDC',
+    'USD Coin'
+);
 const poolAddress = '0x9B08288C3Be4F62bbf8d1C20Ac9C5e6f9467d8B7'
 
 // mainnet fork
@@ -56,9 +63,10 @@ const poolAddress = '0x9B08288C3Be4F62bbf8d1C20Ac9C5e6f9467d8B7'
 // );
 // const poolAddress = '0x4e68Ccd3E89f51C3074ca5072bbAC773960dFa36'
 
-const ERC20ABI = require('./ERC20ABI.json')
+const ERC20ABI = require('./abi/ERC20ABI.json')
 const token0Contract = new ethers.Contract(Token0.address, ERC20ABI, web3Provider)
 const token1Contract = new ethers.Contract(Token1.address, ERC20ABI, web3Provider)
+const tokenForAAVEContract = new ethers.Contract(tokenForAAVE.address, ERC20ABI, web3Provider)
 
 const router = new AlphaRouter({ chainId: chainId, provider: web3Provider})
 
@@ -201,7 +209,7 @@ async function removeAndBurn(WALLET_ADDRESS, WALLET_SECRET){
     const wallet = new ethers.Wallet(WALLET_SECRET)
     const connectedWallet = wallet.connect(web3Provider)
 
-    const NftPosManagerABI = require('./V3PosManagerABI.json')
+    const NftPosManagerABI = require('./abi/V3PosManagerABI.json')
     const NftPosManagerContract = new ethers.Contract(V3_NFT_POS_MANAGER_ADDRESS, NftPosManagerABI, web3Provider)
     const tokenId = await NftPosManagerContract.tokenOfOwnerByIndex(WALLET_ADDRESS, 0)
     const positiondata = await NftPosManagerContract.positions(tokenId)
@@ -280,7 +288,7 @@ async function approveMax(tokenContract, to, WALLET_SECRET) {
     const gasPrice = await getGasPrice(url);
 
     return await tokenContract.connect(connectedWallet).approve(
-        V3_SWAP_ROUTER_ADDRESS,
+        to,
         ethers.constants.MaxUint256,
         {
             gasPrice: gasPrice,
@@ -291,17 +299,49 @@ async function approveMax(tokenContract, to, WALLET_SECRET) {
     })
 }
 
+async function swap(inputToken, outputToken, amount, WALLET_ADDRESS, WALLET_SECRET) {
+    const inputTokenBalance = CurrencyAmount.fromRawAmount(inputToken, JSBI.BigInt(ethers.utils.parseUnits(amount, inputToken.decimals)))
+    const route = await router.route(
+        inputTokenBalance,
+        outputToken,
+        TradeType.EXACT_INPUT,
+        {
+            recipient: WALLET_ADDRESS,
+            slippageTolerance: new Percent(5, 100),
+            deadline: Math.floor(Date.now()/1000 + 240)
+        }
+    )
+
+    const wallet = new ethers.Wallet(WALLET_SECRET)
+    const connectedWallet = wallet.connect(web3Provider)
+
+    const transaction = {
+        data: route.methodParameters.calldata,
+        to: V3_SWAP_ROUTER_ADDRESS,
+        value: BigNumber.from(route.methodParameters.value),
+        from: WALLET_ADDRESS,
+        gasPrice: BigNumber.from(route.gasPriceWei),
+        gasLimit: ethers.utils.hexlify(1000000)
+    }
+    return await connectedWallet.sendTransaction(transaction).then(function(transaction) {
+        return transaction.wait();
+    })
+}
+
 module.exports = {
     V3_SWAP_ROUTER_ADDRESS,
     Token0,
     Token1,
+    tokenForAAVE,
     token0Contract,
     token1Contract,
+    tokenForAAVEContract,
     web3Provider,
     chainId,
     getPoolImmutables,
     getPoolState,
     swapAndAdd,
+    swap,
     getGasPrice,
     removeAndBurn,
     getBalance,

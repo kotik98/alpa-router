@@ -1,2 +1,2 @@
-# alpa-router. 
-Система управления стратегиями на Uniswap
+# alpha-router. 
+Yield farming strategy manager 
