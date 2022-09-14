@@ -119,15 +119,15 @@ async function run(args){
     const WALLET_SECRET = args[4]
 
     // approves for uniswap communication
-    // await approveMax(token0Contract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET)
-    // await approveMax(token1Contract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET)
-    // await approveMax(tokenForAAVEContract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET)
+    await approveMax(token0Contract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET)
+    await approveMax(token1Contract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET)
+    await approveMax(tokenForAAVEContract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET)
 
     // approve for supply on aave
-    // await approveMax(tokenForAAVEContract, AAVEpoolAddress, WALLET_SECRET)
+    await approveMax(tokenForAAVEContract, AAVEpoolAddress, WALLET_SECRET)
 
     // approve for repay on aave
-    // await approveMax(token0Contract, AAVEpoolAddress, WALLET_SECRET)
+    await approveMax(token0Contract, AAVEpoolAddress, WALLET_SECRET)
 
     let epsilon = 1    // allowable missmatch in USD
     let errTimeout = 120000     // timeout to wait after failed transaction
