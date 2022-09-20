@@ -225,17 +225,17 @@ async function run(args){
                     tokenForAAVEBalance = Number(await getBalance(tokenForAAVEContract, WALLET_ADDRESS)) / 10 ** tokenForAAVE.decimals
                     await errCatcher(supply(tokenForAAVE.address, ethers.utils.parseUnits(tokenForAAVEBalance.toFixed(6).toString(), tokenForAAVE.decimals), 0, WALLET_ADDRESS, WALLET_SECRET))
                 } else {
-                    await errCatcher(withdraw(tokenForAAVE.address, ethers.utils.parseUnits(deltaCollateral.toFixed(6).toString(), tokenForAAVE.decimals), WALLET_ADDRESS, WALLET_SECRET))
+                    await errCatcher(withdraw(tokenForAAVE.address, ethers.utils.parseUnits(Math.abs(deltaCollateral).toFixed(6).toString(), tokenForAAVE.decimals), WALLET_ADDRESS, WALLET_SECRET))
 
                     tokenForAAVEBalance = Number(await getBalance(tokenForAAVEContract, WALLET_ADDRESS)) / 10 ** tokenForAAVE.decimals
                     await errCatcher(swap(tokenForAAVE, Token1, tokenForAAVEBalance.toFixed(6).toString(), WALLET_ADDRESS, WALLET_SECRET))
                 }
                 if (deltaBorrowing < 0){
-                    if (token0Balance < deltaBorrowing) {
-                        await errCatcher(swap(Token1, Token0, (deltaBorrowing).toFixed(6).toString(), WALLET_ADDRESS, WALLET_SECRET))
+                    if (token0Balance < Math.abs(deltaBorrowing)) {
+                        await errCatcher(swap(Token1, Token0, Math.abs(deltaBorrowing).toFixed(6).toString(), WALLET_ADDRESS, WALLET_SECRET))
                     }
 
-                    await errCatcher(repay(Token0.address, ethers.utils.parseUnits(deltaBorrowing.toFixed(6).toString(), Token0.decimals), 2, WALLET_ADDRESS, WALLET_SECRET))
+                    await errCatcher(repay(Token0.address, ethers.utils.parseUnits(Math.abs(deltaBorrowing).toFixed(6).toString(), Token0.decimals), 2, WALLET_ADDRESS, WALLET_SECRET))
                 } else {
                     await errCatcher(borrow(Token0.address, ethers.utils.parseUnits(deltaBorrowing.toFixed(6).toString(), tokenForAAVE.decimals), 2, 0, WALLET_ADDRESS, WALLET_SECRET))
                 }
