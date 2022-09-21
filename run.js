@@ -178,8 +178,8 @@ async function run(args){
     currPrice = poolState.sqrtPriceX96 * poolState.sqrtPriceX96 * (10 ** Token0.decimals) / (10 ** Token1.decimals) / 2 ** 192
     await errCatcher(borrow(Token0.address, ethers.utils.parseUnits((tokenForAAVEBalance / targetHealthFactor / currPrice).toFixed(6).toString(), Token0.decimals), 2, 0, WALLET_ADDRESS, WALLET_SECRET))
 
-    token0Balance = Number(await errCatcher(getBalance(token0Contract, WALLET_ADDRESS))) / 10 ** Token0.decimals   // non stable asset
-    token1Balance = Number(await errCatcher(getBalance(token1Contract, WALLET_ADDRESS))) / 10 ** Token1.decimals
+    token0Balance = Number(await errCatcher(getBalance(token0Contract, WALLET_ADDRESS))) / 10 ** Token0.decimals - 0.001   // non stable asset
+    token1Balance = Number(await errCatcher(getBalance(token1Contract, WALLET_ADDRESS))) / 10 ** Token1.decimals - 0.001
     let lowerTick = priceToTick(currPrice * ((100 - width) / 100))
     let upperTick = priceToTick(currPrice * ((100 + width) / 100))
     let lowerPrice = currPrice * ((100 - width) / 100)
@@ -205,8 +205,8 @@ async function run(args){
             await errCatcher(removeAndBurn(WALLET_ADDRESS, WALLET_SECRET)) 
 
             userSummary = await errCatcher(getUserSummary(WALLET_ADDRESS))
-            token0Balance = Number(await errCatcher(getBalance(token0Contract, WALLET_ADDRESS))) / 10 ** Token0.decimals   // non stable asset
-            token1Balance = Number(await errCatcher(getBalance(token1Contract, WALLET_ADDRESS))) / 10 ** Token1.decimals
+            token0Balance = Number(await errCatcher(getBalance(token0Contract, WALLET_ADDRESS))) / 10 ** Token0.decimals - 0.001   // non stable asset
+            token1Balance = Number(await errCatcher(getBalance(token1Contract, WALLET_ADDRESS))) / 10 ** Token1.decimals - 0.001
             sumBalance = token0Balance * currPrice + token1Balance
             deltaCollateral = (targetHealthFactor * (sumBalance - Number(userSummary.totalBorrowsUSD)) - Number(userSummary.totalCollateralUSD)) / (1 + targetHealthFactor)
             deltaBorrowing = 2 / targetHealthFactor * (Number(userSummary.totalCollateralUSD) + deltaCollateral) - sumBalance + deltaCollateral
@@ -243,8 +243,8 @@ async function run(args){
             }
 
             userSummary = await errCatcher(getUserSummary(WALLET_ADDRESS))
-            token0Balance = Number(await errCatcher(getBalance(token0Contract, WALLET_ADDRESS))) / 10 ** Token0.decimals   // non stable asset
-            token1Balance = Number(await errCatcher(getBalance(token1Contract, WALLET_ADDRESS))) / 10 ** Token1.decimals
+            token0Balance = Number(await errCatcher(getBalance(token0Contract, WALLET_ADDRESS))) / 10 ** Token0.decimals - 0.001   // non stable asset
+            token1Balance = Number(await errCatcher(getBalance(token1Contract, WALLET_ADDRESS))) / 10 ** Token1.decimals - 0.001
 
             lowerTick = priceToTick(currPrice * ((100 - width) / 100))
             upperTick = priceToTick(currPrice * ((100 + width) / 100))
