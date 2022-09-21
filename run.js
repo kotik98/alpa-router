@@ -29,8 +29,7 @@ async function errCatcher(f) {
     doLoop = true
     do { 
         try {
-            res = await f
-            return res
+            return await f
         } catch (err) {
             console.log(err)
             await timer(120000)
