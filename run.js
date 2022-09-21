@@ -208,8 +208,8 @@ async function run(args){
             token0Balance = Number(await errCatcher(getBalance(token0Contract, WALLET_ADDRESS))) / 10 ** Token0.decimals   // non stable asset
             token1Balance = Number(await errCatcher(getBalance(token1Contract, WALLET_ADDRESS))) / 10 ** Token1.decimals
             sumBalance = token0Balance * currPrice + token1Balance
-            deltaCollateral = (targetHealthFactor * (sumBalance - userSummary.totalBorrowsUSD) - userSummary.totalCollateralUSD) / (1 + targetHealthFactor)
-            deltaBorrowing = 2 / targetHealthFactor * (userSummary.totalCollateralUSD + deltaCollateral) - sumBalance + deltaCollateral
+            deltaCollateral = (targetHealthFactor * (sumBalance - Number(userSummary.totalBorrowsUSD)) - Number(userSummary.totalCollateralUSD)) / (1 + targetHealthFactor)
+            deltaBorrowing = 2 / targetHealthFactor * (Number(userSummary.totalCollateralUSD) + deltaCollateral) - sumBalance + deltaCollateral
 
             if ((userSummary.healthFactor / liquidationTreshold - targetHealthFactor > rebalancingDelta) ||
                 (userSummary.healthFactor / liquidationTreshold - targetHealthFactor < -rebalancingDelta) ||
@@ -254,8 +254,8 @@ async function run(args){
             console.log(lowerPrice, upperPrice, Date.now(), token0Balance, token1Balance, currPrice, userSummary.totalCollateralUSD, userSummary.healthFactor) 
 
             await errCatcher(sheet.addRow({ lowerBound: lowerPrice.toFixed(6), upperBound: upperPrice.toFixed(6) , UnixTime: Date.now(), 
-            token0Balance: token0Balance.toFixed(2), token1Balance: token1Balance.toFixed(2), currentPrice: currPrice.toFixed(6), AAVECollateral: userSummary.totalCollateralUSD.toFixed(2), healthFactor: userSummary.healthFactor.toFixed(3),
-            total: (token0Balance * currPrice + token1Balance + userSummary.totalCollateralUSD - userSummary.totalCollateralUSD * liquidationTreshold / userSummary.healthFactor).toFixed(2) }));
+            token0Balance: token0Balance.toFixed(2), token1Balance: token1Balance.toFixed(2), currentPrice: currPrice.toFixed(6), AAVECollateral: Number(userSummary.totalCollateralUSD).toFixed(2), healthFactor: Number(userSummary.healthFactor).toFixed(3),
+            total: (token0Balance * currPrice + token1Balance + Number(userSummary.totalCollateralUSD) - Number(userSummary.totalCollateralUSD) * liquidationTreshold / Number(userSummary.totalCollateralUSD)).toFixed(2) }));
             
             await errCatcher(swapAndAdd(widthInTicks, token0Balance.toString(), token1Balance.toString(), WALLET_ADDRESS, WALLET_SECRET))
         }
