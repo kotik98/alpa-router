@@ -32,7 +32,7 @@ async function errCatcher(f) {
             return await f
         } catch (err) {
             console.log(err)
-            await timer(120000)
+            await timer(360000)
         }
     } while (doLoop)
 }
