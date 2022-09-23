@@ -93,7 +93,7 @@ async function getUserSummary(WALLET_ADDRESS){
 }
 
 async function supply(assetAddress, amount, referralCode, WALLET_ADDRESS, WALLET_SECRET){
-    const gasPrice = getGasPrice(gasPriceUrl)
+    const gasPrice = await getGasPrice(gasPriceUrl)
 
     const wallet = new ethers.Wallet(WALLET_SECRET, web3Provider)
 
@@ -106,7 +106,7 @@ async function supply(assetAddress, amount, referralCode, WALLET_ADDRESS, WALLET
 }
 
 async function withdraw(assetAddress, amount, WALLET_ADDRESS, WALLET_SECRET){
-    const gasPrice = getGasPrice(gasPriceUrl)
+    const gasPrice = await getGasPrice(gasPriceUrl)
 
     const wallet = new ethers.Wallet(WALLET_SECRET, web3Provider)
 
@@ -119,7 +119,7 @@ async function withdraw(assetAddress, amount, WALLET_ADDRESS, WALLET_SECRET){
 }
 
 async function borrow(assetAddress, amount, interestRateMode, referralCode, WALLET_ADDRESS, WALLET_SECRET){
-    const gasPrice = getGasPrice(gasPriceUrl)
+    const gasPrice = await getGasPrice(gasPriceUrl)
 
     const wallet = new ethers.Wallet(WALLET_SECRET, web3Provider)
 
@@ -132,7 +132,7 @@ async function borrow(assetAddress, amount, interestRateMode, referralCode, WALL
 }
 
 async function repay(assetAddress, amount, RateMode, WALLET_ADDRESS, WALLET_SECRET){
-    const gasPrice = getGasPrice(gasPriceUrl)
+    const gasPrice = await getGasPrice(gasPriceUrl)
 
     const wallet = new ethers.Wallet(WALLET_SECRET, web3Provider)
 
