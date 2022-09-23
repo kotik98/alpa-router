@@ -31,6 +31,7 @@ async function errCatcher(f) {
         try {
             return await f
         } catch (err) {
+            console.log(Date.now())
             console.log(err)
             await timer(360000)
         }
