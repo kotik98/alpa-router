@@ -302,7 +302,8 @@ async function approveMax(tokenContract, to, WALLET_SECRET) {
 }
 
 async function swap(inputToken, outputToken, amount, WALLET_ADDRESS, WALLET_SECRET) {
-    const inputTokenBalance = CurrencyAmount.fromRawAmount(inputToken, JSBI.BigInt(ethers.utils.parseUnits(amount, inputToken.decimals)))
+    amount = Number(amount).toFixed(inputToken.decimals)
+    const inputTokenBalance = CurrencyAmount.fromRawAmount(inputToken, JSBI.BigInt(ethers.utils.parseUnits(String(amount), inputToken.decimals)))
     const route = await router.route(
         inputTokenBalance,
         outputToken,
