@@ -109,8 +109,10 @@ async function getPoolState() {
 }
 
 async function swapAndAdd(width, token0Amount, token1Amount, WALLET_ADDRESS, WALLET_SECRET) {
-    const token0Balance = CurrencyAmount.fromRawAmount(Token0, JSBI.BigInt(ethers.utils.parseUnits(token0Amount, Token0.decimals)))
-    const token1Balance = CurrencyAmount.fromRawAmount(Token1, JSBI.BigInt(ethers.utils.parseUnits(token1Amount, Token1.decimals)))
+    token0Amount = Number(token0Amount).toFixed(Token0.decimals)
+    token1Amount = Number(token1Amount).toFixed(Token1.decimals)
+    const token0Balance = CurrencyAmount.fromRawAmount(Token0, JSBI.BigInt(ethers.utils.parseUnits(String(token0Amount), Token0.decimals)))
+    const token1Balance = CurrencyAmount.fromRawAmount(Token1, JSBI.BigInt(ethers.utils.parseUnits(String(token1Amount), Token1.decimals)))
 
     const wallet = new ethers.Wallet(WALLET_SECRET)
     const connectedWallet = wallet.connect(web3Provider)
