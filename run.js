@@ -25,15 +25,14 @@ function priceToTick(price) {
     return Math.round(tick_id, 0)
 }
 
-async function errCatcher(f) {
+async function errCatcher(f, arguments) {
     doLoop = true
     do { 
         try {
-            return await f
+            return await f.apply(this, arguments)
         } catch (err) {
-            console.log(Date.now())
             console.log(err)
-            await timer(360000)
+            await timer(120000)
         }
     } while (doLoop)
 }
@@ -132,54 +131,54 @@ async function run(args){
     const WALLET_SECRET = args[4]
 
     // approves for uniswap communication
-    await errCatcher(approveMax(token0Contract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET))
-    await errCatcher(approveMax(token1Contract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET))
-    await errCatcher(approveMax(tokenForAAVEContract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET))
+    await errCatcher(approveMax, [token0Contract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET])
+    await errCatcher(approveMax, [token1Contract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET])
+    await errCatcher(approveMax, [tokenForAAVEContract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET])
 
     // approve for supply on aave
-    await errCatcher(approveMax(tokenForAAVEContract, AAVEpoolAddress, WALLET_SECRET))
+    await errCatcher(approveMax, [tokenForAAVEContract, AAVEpoolAddress, WALLET_SECRET])
 
     // approve for repay on aave
-    await errCatcher(approveMax(token0Contract, AAVEpoolAddress, WALLET_SECRET))
+    await errCatcher(approveMax, [token0Contract, AAVEpoolAddress, WALLET_SECRET])
 
     let epsilon = 1    // allowable missmatch in USD
     let liquidationTreshold = 0.85    // liq treshold for collateral
     let targetHealthFactor = healthFactor / liquidationTreshold
     let userSummary
-    let poolState = await errCatcher(getPoolState())
-    let poolImmutables = await errCatcher(getPoolImmutables())
+    let poolState = await errCatcher(getPoolState, [])
+    let poolImmutables = await errCatcher(getPoolImmutables, [])
     let currPrice = poolState.sqrtPriceX96 * poolState.sqrtPriceX96 * (10 ** Token0.decimals) / (10 ** Token1.decimals) / 2 ** 192
-    let token0Balance = Number(await errCatcher(getBalance(token0Contract, WALLET_ADDRESS))) / 10 ** Token0.decimals   // non stable asset
-    let token1Balance = Number(await errCatcher(getBalance(token1Contract, WALLET_ADDRESS))) / 10 ** Token1.decimals
-    let tokenForAAVEBalance = Number(await errCatcher(getBalance(tokenForAAVEContract, WALLET_ADDRESS))) / 10 ** tokenForAAVE.decimals
+    let token0Balance = Number(await errCatcher(getBalance, [token0Contract, WALLET_ADDRESS])) / 10 ** Token0.decimals   // non stable asset
+    let token1Balance = Number(await errCatcher(getBalance, [token1Contract, WALLET_ADDRESS])) / 10 ** Token1.decimals
+    let tokenForAAVEBalance = Number(await errCatcher(getBalance, [tokenForAAVEContract, WALLET_ADDRESS])) / 10 ** tokenForAAVE.decimals
     let delta = (targetHealthFactor * (token0Balance * currPrice + token1Balance) - tokenForAAVEBalance) / (1 + targetHealthFactor)
     delta = delta.toFixed(6)
 
     if (Math.abs(delta) > epsilon) {
         if (delta > 0) {
             if (delta > token0Balance * currPrice && delta > token1Balance) {
-                await Promise.all([errCatcher(swap(Token0, tokenForAAVE, token0Balance.toFixed(6).toString(), WALLET_ADDRESS, WALLET_SECRET)),
-                    errCatcher(swap(Token1, tokenForAAVE, (delta - token0Balance * currPrice).toFixed(6).toString(), WALLET_ADDRESS, WALLET_SECRET))])
+                await Promise.all([errCatcher(swap, [Token0, tokenForAAVE, token0Balance.toFixed(6).toString(), WALLET_ADDRESS, WALLET_SECRET]),
+                    errCatcher(swap, [Token1, tokenForAAVE, (delta - token0Balance * currPrice).toFixed(6).toString(), WALLET_ADDRESS, WALLET_SECRET])])
                 
             } else if (delta > token0Balance * currPrice && delta < token1Balance) {
-                await errCatcher(swap(Token1, tokenForAAVE, delta.toString(), WALLET_ADDRESS, WALLET_SECRET))
+                await errCatcher(swap, [Token1, tokenForAAVE, delta.toString(), WALLET_ADDRESS, WALLET_SECRET])
             } else {
-                await errCatcher(swap(Token0, tokenForAAVE, delta.toString(), WALLET_ADDRESS, WALLET_SECRET))
+                await errCatcher(swap, [Token0, tokenForAAVE, delta.toString(), WALLET_ADDRESS, WALLET_SECRET])
             }
         } else {
-            await errCatcher(swap(tokenForAAVE, Token1, Math.abs(delta).toString(), WALLET_ADDRESS, WALLET_SECRET))
+            await errCatcher(swap, [tokenForAAVE, Token1, Math.abs(delta).toString(), WALLET_ADDRESS, WALLET_SECRET])
         }
     }
 
-    tokenForAAVEBalance = Number(await errCatcher(getBalance(tokenForAAVEContract, WALLET_ADDRESS))) / 10 ** tokenForAAVE.decimals
-    await errCatcher(supply(tokenForAAVE.address,  ethers.utils.parseUnits(tokenForAAVEBalance.toString(), tokenForAAVE.decimals), 0, WALLET_ADDRESS, WALLET_SECRET))
+    tokenForAAVEBalance = Number(await errCatcher(getBalance, [tokenForAAVEContract, WALLET_ADDRESS])) / 10 ** tokenForAAVE.decimals
+    await errCatcher(supply, [tokenForAAVE.address,  ethers.utils.parseUnits(tokenForAAVEBalance.toString(), tokenForAAVE.decimals), 0, WALLET_ADDRESS, WALLET_SECRET])
 
-    poolState = await errCatcher(getPoolState())
+    poolState = await errCatcher(getPoolState, [])
     currPrice = poolState.sqrtPriceX96 * poolState.sqrtPriceX96 * (10 ** Token0.decimals) / (10 ** Token1.decimals) / 2 ** 192
-    await errCatcher(borrow(Token0.address, ethers.utils.parseUnits((tokenForAAVEBalance / targetHealthFactor / currPrice).toFixed(6).toString(), Token0.decimals), 2, 0, WALLET_ADDRESS, WALLET_SECRET))
+    await errCatcher(borrow, [Token0.address, ethers.utils.parseUnits((tokenForAAVEBalance / targetHealthFactor / currPrice).toFixed(6).toString(), Token0.decimals), 2, 0, WALLET_ADDRESS, WALLET_SECRET])
 
-    token0Balance = Number(await errCatcher(getBalance(token0Contract, WALLET_ADDRESS))) / 10 ** Token0.decimals - 0.001   // non stable asset
-    token1Balance = Number(await errCatcher(getBalance(token1Contract, WALLET_ADDRESS))) / 10 ** Token1.decimals - 0.001
+    token0Balance = Number(await errCatcher(getBalance, [token0Contract, WALLET_ADDRESS])) / 10 ** Token0.decimals - 0.001   // non stable asset
+    token1Balance = Number(await errCatcher(getBalance, [token1Contract, WALLET_ADDRESS])) / 10 ** Token1.decimals - 0.001
     let lowerTick = priceToTick(currPrice * ((100 - width) / 100))
     let upperTick = priceToTick(currPrice * ((100 + width) / 100))
     let lowerPrice = currPrice * ((100 - width) / 100)
@@ -187,26 +186,26 @@ async function run(args){
     widthInTicks = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
     console.log(lowerPrice, upperPrice, Date.now(), token0Balance, token1Balance, currPrice, tokenForAAVEBalance, healthFactor)
 
-    await errCatcher(doc.useServiceAccountAuth(creds))
-    const sheet = await errCatcher(doc.addSheet({ headerValues: ['lowerBound', 'upperBound', 'UnixTime', 'token0Balance', 'token1Balance', 'currentPrice', 'AAVECollateral', 'healthFactor', 'total'] }))
+    await errCatcher(doc.useServiceAccountAuth, [creds])
+    const sheet = await errCatcher(doc.addSheet, [{ headerValues: ['lowerBound', 'upperBound', 'UnixTime', 'token0Balance', 'token1Balance', 'currentPrice', 'AAVECollateral', 'healthFactor', 'total'] }])
 
-    await errCatcher(sheet.addRow({ lowerBound: lowerPrice.toFixed(6), upperBound: upperPrice.toFixed(6), UnixTime: Date.now(), 
+    await errCatcher(sheet.addRow, [{ lowerBound: lowerPrice.toFixed(6), upperBound: upperPrice.toFixed(6), UnixTime: Date.now(), 
     token0Balance: token0Balance.toFixed(2), token1Balance: token1Balance.toFixed(2), currentPrice: currPrice.toFixed(6), AAVECollateral: tokenForAAVEBalance.toFixed(2), healthFactor: healthFactor.toFixed(3),
-    total: (token0Balance * currPrice + token1Balance + tokenForAAVEBalance - tokenForAAVEBalance / targetHealthFactor).toFixed(2) }))
+    total: (token0Balance * currPrice + token1Balance + tokenForAAVEBalance - tokenForAAVEBalance / targetHealthFactor).toFixed(2) }])
 
-    await errCatcher(swapAndAdd(widthInTicks, token0Balance.toString(), token1Balance.toString(), WALLET_ADDRESS, WALLET_SECRET))
+    await errCatcher(swapAndAdd, [widthInTicks, token0Balance.toString(), token1Balance.toString(), WALLET_ADDRESS, WALLET_SECRET])
 
     let sumBalance, swapToken
     while(true){
-        poolState = await errCatcher(getPoolState())
+        poolState = await errCatcher(getPoolState, [])
         currPrice = poolState.sqrtPriceX96 * poolState.sqrtPriceX96 * (10 ** Token0.decimals) / (10 ** Token1.decimals) / 2 ** 192
 
         if (upperTick < priceToTick(currPrice) || priceToTick(currPrice) < lowerTick) {
-            await errCatcher(removeAndBurn(WALLET_ADDRESS, WALLET_SECRET)) 
+            await errCatcher(removeAndBurn, [WALLET_ADDRESS, WALLET_SECRET]) 
 
-            userSummary = await errCatcher(getUserSummary(WALLET_ADDRESS))
-            token0Balance = Number(await errCatcher(getBalance(token0Contract, WALLET_ADDRESS))) / 10 ** Token0.decimals - 0.001   // non stable asset
-            token1Balance = Number(await errCatcher(getBalance(token1Contract, WALLET_ADDRESS))) / 10 ** Token1.decimals - 0.001
+            userSummary = await errCatcher(getUserSummary, [WALLET_ADDRESS])
+            token0Balance = Number(await errCatcher(getBalance, [token0Contract, WALLET_ADDRESS])) / 10 ** Token0.decimals - 0.001   // non stable asset
+            token1Balance = Number(await errCatcher(getBalance, [token1Contract, WALLET_ADDRESS])) / 10 ** Token1.decimals - 0.001
             sumBalance = token0Balance * currPrice + token1Balance
             deltaCollateral = (targetHealthFactor * (sumBalance - Number(userSummary.totalBorrowsUSD)) - Number(userSummary.totalCollateralUSD)) / (1 + targetHealthFactor)
             deltaBorrowing = 2 / targetHealthFactor * (Number(userSummary.totalCollateralUSD) + deltaCollateral) - sumBalance + deltaCollateral
@@ -220,31 +219,31 @@ async function run(args){
                     } else {
                         swapToken = Token0
                     }
-                    await errCatcher(swap(swapToken, tokenForAAVE, (deltaCollateral).toFixed(6).toString(), WALLET_ADDRESS, WALLET_SECRET))
+                    await errCatcher(swap, [swapToken, tokenForAAVE, (deltaCollateral).toFixed(6).toString(), WALLET_ADDRESS, WALLET_SECRET])
 
                     tokenForAAVEBalance = Number(await getBalance(tokenForAAVEContract, WALLET_ADDRESS)) / 10 ** tokenForAAVE.decimals
-                    await errCatcher(supply(tokenForAAVE.address, ethers.utils.parseUnits(tokenForAAVEBalance.toFixed(6).toString(), tokenForAAVE.decimals), 0, WALLET_ADDRESS, WALLET_SECRET))
+                    await errCatcher(supply, [tokenForAAVE.address, ethers.utils.parseUnits(tokenForAAVEBalance.toFixed(6).toString(), tokenForAAVE.decimals), 0, WALLET_ADDRESS, WALLET_SECRET])
                 } else {
-                    await errCatcher(withdraw(tokenForAAVE.address, ethers.utils.parseUnits(Math.abs(deltaCollateral).toFixed(6).toString(), tokenForAAVE.decimals), WALLET_ADDRESS, WALLET_SECRET))
+                    await errCatcher(withdraw, [tokenForAAVE.address, ethers.utils.parseUnits(Math.abs(deltaCollateral).toFixed(6).toString(), tokenForAAVE.decimals), WALLET_ADDRESS, WALLET_SECRET])
 
                     tokenForAAVEBalance = Number(await getBalance(tokenForAAVEContract, WALLET_ADDRESS)) / 10 ** tokenForAAVE.decimals
-                    await errCatcher(swap(tokenForAAVE, Token1, tokenForAAVEBalance.toFixed(6).toString(), WALLET_ADDRESS, WALLET_SECRET))
+                    await errCatcher(swap, [tokenForAAVE, Token1, tokenForAAVEBalance.toFixed(6).toString(), WALLET_ADDRESS, WALLET_SECRET])
                 }
                 if (deltaBorrowing < 0){
                     if (token0Balance < Math.abs(deltaBorrowing)) {
-                        await errCatcher(swap(Token1, Token0, Math.abs(deltaBorrowing).toFixed(6).toString(), WALLET_ADDRESS, WALLET_SECRET))
+                        await errCatcher(swap, [Token1, Token0, Math.abs(deltaBorrowing).toFixed(6).toString(), WALLET_ADDRESS, WALLET_SECRET])
                     }
 
-                    await errCatcher(repay(Token0.address, ethers.utils.parseUnits(Math.abs(deltaBorrowing).toFixed(6).toString(), Token0.decimals), 2, WALLET_ADDRESS, WALLET_SECRET))
+                    await errCatcher(repay, [Token0.address, ethers.utils.parseUnits(Math.abs(deltaBorrowing).toFixed(6).toString(), Token0.decimals), 2, WALLET_ADDRESS, WALLET_SECRET])
                 } else {
-                    await errCatcher(borrow(Token0.address, ethers.utils.parseUnits(deltaBorrowing.toFixed(6).toString(), tokenForAAVE.decimals), 2, 0, WALLET_ADDRESS, WALLET_SECRET))
+                    await errCatcher(borrow, [Token0.address, ethers.utils.parseUnits(deltaBorrowing.toFixed(6).toString(), tokenForAAVE.decimals), 2, 0, WALLET_ADDRESS, WALLET_SECRET])
                 }
 
             }
 
-            userSummary = await errCatcher(getUserSummary(WALLET_ADDRESS))
-            token0Balance = Number(await errCatcher(getBalance(token0Contract, WALLET_ADDRESS))) / 10 ** Token0.decimals - 0.001   // non stable asset
-            token1Balance = Number(await errCatcher(getBalance(token1Contract, WALLET_ADDRESS))) / 10 ** Token1.decimals - 0.001
+            userSummary = await errCatcher(getUserSummary, [WALLET_ADDRESS])
+            token0Balance = Number(await errCatcher(getBalance, [token0Contract, WALLET_ADDRESS])) / 10 ** Token0.decimals - 0.001   // non stable asset
+            token1Balance = Number(await errCatcher(getBalance, [token1Contract, WALLET_ADDRESS])) / 10 ** Token1.decimals - 0.001
 
             lowerTick = priceToTick(currPrice * ((100 - width) / 100))
             upperTick = priceToTick(currPrice * ((100 + width) / 100))
@@ -253,11 +252,11 @@ async function run(args){
             widthInTicks = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
             console.log(lowerPrice, upperPrice, Date.now(), token0Balance, token1Balance, currPrice, userSummary.totalCollateralUSD, userSummary.healthFactor) 
 
-            await errCatcher(sheet.addRow({ lowerBound: lowerPrice.toFixed(6), upperBound: upperPrice.toFixed(6) , UnixTime: Date.now(), 
+            await errCatcher(sheet.addRow, [{ lowerBound: lowerPrice.toFixed(6), upperBound: upperPrice.toFixed(6) , UnixTime: Date.now(), 
             token0Balance: token0Balance.toFixed(2), token1Balance: token1Balance.toFixed(2), currentPrice: currPrice.toFixed(6), AAVECollateral: Number(userSummary.totalCollateralUSD).toFixed(2), healthFactor: Number(userSummary.healthFactor).toFixed(3),
-            total: (token0Balance * currPrice + token1Balance + Number(userSummary.totalCollateralUSD) - Number(userSummary.totalCollateralUSD) * liquidationTreshold / Number(userSummary.healthFactor)).toFixed(2) }));
+            total: (token0Balance * currPrice + token1Balance + Number(userSummary.totalCollateralUSD) - Number(userSummary.totalCollateralUSD) * liquidationTreshold / Number(userSummary.healthFactor)).toFixed(2) }]);
             
-            await errCatcher(swapAndAdd(widthInTicks, token0Balance.toString(), token1Balance.toString(), WALLET_ADDRESS, WALLET_SECRET))
+            await errCatcher(swapAndAdd, [widthInTicks, token0Balance.toString(), token1Balance.toString(), WALLET_ADDRESS, WALLET_SECRET])
         }
         await timer(15000)
     }
