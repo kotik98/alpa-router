@@ -230,13 +230,13 @@ async function run(args){
                     await errCatcher(swap, [tokenForAAVE, Token1, tokenForAAVEBalance.toFixed(6).toString(), WALLET_ADDRESS, WALLET_SECRET])
                 }
                 if (deltaBorrowing < 0){
-                    if (token0Balance < Math.abs(deltaBorrowing)) {
+                    if (token0Balance < Math.abs(deltaBorrowing / currPrice)) {
                         await errCatcher(swap, [Token1, Token0, Math.abs(deltaBorrowing).toFixed(6).toString(), WALLET_ADDRESS, WALLET_SECRET])
                     }
 
-                    await errCatcher(repay, [Token0.address, ethers.utils.parseUnits(Math.abs(deltaBorrowing).toFixed(6).toString(), Token0.decimals), 2, WALLET_ADDRESS, WALLET_SECRET])
+                    await errCatcher(repay, [Token0.address, ethers.utils.parseUnits(Math.abs(deltaBorrowing / currPrice * 0.995).toFixed(6).toString(), Token0.decimals), 2, WALLET_ADDRESS, WALLET_SECRET])
                 } else {
-                    await errCatcher(borrow, [Token0.address, ethers.utils.parseUnits(deltaBorrowing.toFixed(6).toString(), tokenForAAVE.decimals), 2, 0, WALLET_ADDRESS, WALLET_SECRET])
+                    await errCatcher(borrow, [Token0.address, ethers.utils.parseUnits((deltaBorrowing / currPrice).toFixed(6).toString(), tokenForAAVE.decimals), 2, 0, WALLET_ADDRESS, WALLET_SECRET])
                 }
 
             }
@@ -250,7 +250,7 @@ async function run(args){
             lowerPrice = currPrice * ((100 - width) / 100)
             upperPrice = currPrice * ((100 + width) / 100)
             widthInTicks = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
-            console.log(lowerPrice, upperPrice, Date.now(), token0Balance, token1Balance, currPrice, userSummary.totalCollateralUSD, userSummary.healthFactor) 
+            console.log(lowerPrice, upperPrice, Date.now(), token0Balance, token1Balance, currPrice, userSummary.totalCollateralUSD, userSummary.healthFactor, deltaCollateral, deltaBorrowing) 
 
             await sheet.addRow({ lowerBound: lowerPrice.toFixed(6), upperBound: upperPrice.toFixed(6) , UnixTime: Date.now(), 
             token0Balance: token0Balance.toFixed(2), token1Balance: token1Balance.toFixed(2), currentPrice: currPrice.toFixed(6), AAVECollateral: Number(userSummary.totalCollateralUSD).toFixed(2), healthFactor: Number(userSummary.healthFactor).toFixed(3),
