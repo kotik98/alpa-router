@@ -236,7 +236,7 @@ async function run(args){
 
                     await errCatcher(repay, [Token0.address, ethers.utils.parseUnits(Math.abs(deltaBorrowing / currPrice * 0.995).toFixed(6).toString(), Token0.decimals), 2, WALLET_ADDRESS, WALLET_SECRET])
                 } else {
-                    await errCatcher(borrow, [Token0.address, ethers.utils.parseUnits((deltaBorrowing / currPrice).toFixed(6).toString(), tokenForAAVE.decimals), 2, 0, WALLET_ADDRESS, WALLET_SECRET])
+                    await errCatcher(borrow, [Token0.address, ethers.utils.parseUnits((deltaBorrowing / currPrice).toFixed(6).toString(), Token0.decimals), 2, 0, WALLET_ADDRESS, WALLET_SECRET])
                 }
 
             }
