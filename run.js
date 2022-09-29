@@ -1,6 +1,6 @@
 const { V3_SWAP_ROUTER_ADDRESS, Token0, Token1, tokenForAAVE, token0Contract, token1Contract, tokenForAAVEContract, getPoolState, getBalance, getGasPrice, getPoolImmutables, swapAndAdd, removeAndBurn, approveMax, swap } = require('./uniswapContractCommunication');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
-const doc = new GoogleSpreadsheet('1xdwWPbW0LhJby-3bQ7SVMnzlS1D5k0yeH4mpEPIq2Qs')
+const doc = new GoogleSpreadsheet('1RTCS-IDEs0b-mGRYIVrBhTNIS-wVTMU02TF8OWruFHA')
 const creds = require("./credentials.json")
 const { ethers, BigNumber } = require('ethers')
 const { spawnSync } = require('child_process')
@@ -127,11 +127,10 @@ const { AAVEpoolAddress, getUserSummary, supply, withdraw, borrow, repay } = req
 
 async function run(args){
 
-    const width = Number(args[0])
-    const rebalancingDelta = Number(args[1])
-    const healthFactor = Number(args[2])
-    const WALLET_ADDRESS = args[3]
-    const WALLET_SECRET = args[4]
+    const rebalancingDelta = Number(args[0])
+    const healthFactor = Number(args[1])
+    const WALLET_ADDRESS = args[2]
+    const WALLET_SECRET = args[3]
 
     // approves for uniswap communication
     await errCatcher(approveMax, [token0Contract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET])
@@ -180,12 +179,13 @@ async function run(args){
     currPrice = poolState.sqrtPriceX96 * poolState.sqrtPriceX96 * (10 ** Token0.decimals) / (10 ** Token1.decimals) / 2 ** 192
     await errCatcher(borrow, [Token0.address, ethers.utils.parseUnits((tokenForAAVEBalance / targetHealthFactor / currPrice).toFixed(6).toString(), Token0.decimals), 2, 0, WALLET_ADDRESS, WALLET_SECRET])
 
+    let width = Number(ATR.stdout)
     token0Balance = Number(await errCatcher(getBalance, [token0Contract, WALLET_ADDRESS])) / 10 ** Token0.decimals - 0.001   // non stable asset
     token1Balance = Number(await errCatcher(getBalance, [token1Contract, WALLET_ADDRESS])) / 10 ** Token1.decimals - 0.001
-    let lowerTick = priceToTick(currPrice * ((100 - width) / 100))
-    let upperTick = priceToTick(currPrice * ((100 + width) / 100))
-    let lowerPrice = currPrice * ((100 - width) / 100)
-    let upperPrice = currPrice * ((100 + width) / 100)
+    let lowerPrice = currPrice - width
+    let upperPrice = currPrice + width
+    let lowerTick = priceToTick(lowerPrice)
+    let upperTick = priceToTick(upperPrice)
     widthInTicks = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
     console.log(lowerPrice, upperPrice, Date.now(), token0Balance, token1Balance, currPrice, tokenForAAVEBalance, healthFactor)
 
@@ -248,10 +248,11 @@ async function run(args){
             token0Balance = Number(await errCatcher(getBalance, [token0Contract, WALLET_ADDRESS])) / 10 ** Token0.decimals - 0.001   // non stable asset
             token1Balance = Number(await errCatcher(getBalance, [token1Contract, WALLET_ADDRESS])) / 10 ** Token1.decimals - 0.001
 
-            lowerTick = priceToTick(currPrice * ((100 - width) / 100))
-            upperTick = priceToTick(currPrice * ((100 + width) / 100))
-            lowerPrice = currPrice * ((100 - width) / 100)
-            upperPrice = currPrice * ((100 + width) / 100)
+            width = Number(ATR.stdout)
+            let lowerPrice = currPrice - width
+            let upperPrice = currPrice + width
+            let lowerTick = priceToTick(lowerPrice)
+            let upperTick = priceToTick(upperPrice)
             widthInTicks = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
             console.log(lowerPrice, upperPrice, Date.now(), token0Balance, token1Balance, currPrice, userSummary.totalCollateralUSD, userSummary.healthFactor, deltaCollateral, deltaBorrowing) 
 
@@ -265,6 +266,4 @@ async function run(args){
     }
 }
 
-// run(args)
-
-console.log(Number(ATR.stdout));
+run(args)
