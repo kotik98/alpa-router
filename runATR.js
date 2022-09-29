@@ -180,8 +180,8 @@ async function run(args){
     await errCatcher(borrow, [Token0.address, ethers.utils.parseUnits((tokenForAAVEBalance / targetHealthFactor / currPrice).toFixed(6).toString(), Token0.decimals), 2, 0, WALLET_ADDRESS, WALLET_SECRET])
 
     let width = Number(ATR.stdout)
-    token0Balance = Number(await errCatcher(getBalance, [token0Contract, WALLET_ADDRESS])) / 10 ** Token0.decimals - 0.001   // non stable asset
-    token1Balance = Number(await errCatcher(getBalance, [token1Contract, WALLET_ADDRESS])) / 10 ** Token1.decimals - 0.001
+    token0Balance = Math.max(Number(await errCatcher(getBalance, [token0Contract, WALLET_ADDRESS])) / 10 ** Token0.decimals - 0.001, 0)   // non stable asset
+    token1Balance = Math.max(Number(await errCatcher(getBalance, [token1Contract, WALLET_ADDRESS])) / 10 ** Token1.decimals - 0.001, 0)
     let lowerPrice = currPrice - width
     let upperPrice = currPrice + width
     let lowerTick = priceToTick(lowerPrice)
@@ -207,8 +207,8 @@ async function run(args){
             await errCatcher(removeAndBurn, [WALLET_ADDRESS, WALLET_SECRET]) 
 
             userSummary = await errCatcher(getUserSummary, [WALLET_ADDRESS])
-            token0Balance = Number(await errCatcher(getBalance, [token0Contract, WALLET_ADDRESS])) / 10 ** Token0.decimals - 0.001   // non stable asset
-            token1Balance = Number(await errCatcher(getBalance, [token1Contract, WALLET_ADDRESS])) / 10 ** Token1.decimals - 0.001
+            token0Balance = Math.max(Number(await errCatcher(getBalance, [token0Contract, WALLET_ADDRESS])) / 10 ** Token0.decimals - 0.001, 0)   // non stable asset
+            token1Balance = Math.max(Number(await errCatcher(getBalance, [token1Contract, WALLET_ADDRESS])) / 10 ** Token1.decimals - 0.001, 0)
             sumBalance = token0Balance * currPrice + token1Balance
             deltaCollateral = (targetHealthFactor * (sumBalance - Number(userSummary.totalBorrowsUSD)) - Number(userSummary.totalCollateralUSD)) / (1 + targetHealthFactor)
             deltaBorrowing = 2 / targetHealthFactor * (Number(userSummary.totalCollateralUSD) + deltaCollateral) - sumBalance + deltaCollateral
@@ -245,8 +245,8 @@ async function run(args){
             }
 
             userSummary = await errCatcher(getUserSummary, [WALLET_ADDRESS])
-            token0Balance = Number(await errCatcher(getBalance, [token0Contract, WALLET_ADDRESS])) / 10 ** Token0.decimals - 0.001   // non stable asset
-            token1Balance = Number(await errCatcher(getBalance, [token1Contract, WALLET_ADDRESS])) / 10 ** Token1.decimals - 0.001
+            token0Balance = Math.max(Number(await errCatcher(getBalance, [token0Contract, WALLET_ADDRESS])) / 10 ** Token0.decimals - 0.001, 0)   // non stable asset
+            token1Balance = Math.max(Number(await errCatcher(getBalance, [token1Contract, WALLET_ADDRESS])) / 10 ** Token1.decimals - 0.001, 0)
 
             width = Number(ATR.stdout)
             let lowerPrice = currPrice - width
