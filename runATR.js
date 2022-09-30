@@ -132,18 +132,18 @@ async function run(args){
     const WALLET_ADDRESS = args[2]
     const WALLET_SECRET = args[3]
 
-    // approves for uniswap communication
-    await errCatcher(approveMax, [token0Contract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET])
-    await errCatcher(approveMax, [token1Contract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET])
-    await errCatcher(approveMax, [tokenForAAVEContract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET])
+    // // approves for uniswap communication
+    // await errCatcher(approveMax, [token0Contract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET])
+    // await errCatcher(approveMax, [token1Contract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET])
+    // await errCatcher(approveMax, [tokenForAAVEContract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET])
 
-    // approve for supply on aave
-    await errCatcher(approveMax, [tokenForAAVEContract, AAVEpoolAddress, WALLET_SECRET])
+    // // approve for supply on aave
+    // await errCatcher(approveMax, [tokenForAAVEContract, AAVEpoolAddress, WALLET_SECRET])
 
-    // approve for repay on aave
-    await errCatcher(approveMax, [token0Contract, AAVEpoolAddress, WALLET_SECRET])
+    // // approve for repay on aave
+    // await errCatcher(approveMax, [token0Contract, AAVEpoolAddress, WALLET_SECRET])
 
-    let epsilon = 1    // allowable missmatch in USD
+    let epsilon = 0.1    // allowable missmatch in USD
     let liquidationTreshold = 0.85    // liq treshold for collateral
     let targetHealthFactor = healthFactor / liquidationTreshold
     let userSummary
@@ -186,7 +186,7 @@ async function run(args){
     let upperPrice = currPrice + width
     let lowerTick = priceToTick(lowerPrice)
     let upperTick = priceToTick(upperPrice)
-    widthInTicks = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
+    let widthInTicks = Math.round(Math.abs((lowerTick - upperTick) / 2) / poolImmutables.tickSpacing, 0)
     console.log(lowerPrice, upperPrice, Date.now(), token0Balance, token1Balance, currPrice, tokenForAAVEBalance, healthFactor)
 
     await doc.useServiceAccountAuth(creds)
