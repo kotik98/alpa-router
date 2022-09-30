@@ -177,13 +177,13 @@ async function run(args){
     currPrice = poolState.sqrtPriceX96 * poolState.sqrtPriceX96 * (10 ** Token0.decimals) / (10 ** Token1.decimals) / 2 ** 192
     await errCatcher(borrow, [Token0.address, ethers.utils.parseUnits((tokenForAAVEBalance / targetHealthFactor / currPrice).toFixed(6).toString(), Token0.decimals), 2, 0, WALLET_ADDRESS, WALLET_SECRET])
 
-    token0Balance = Number(await errCatcher(getBalance, [token0Contract, WALLET_ADDRESS])) / 10 ** Token0.decimals - 0.001   // non stable asset
-    token1Balance = Number(await errCatcher(getBalance, [token1Contract, WALLET_ADDRESS])) / 10 ** Token1.decimals - 0.001
+    token0Balance = Math.max(Number(await errCatcher(getBalance, [token0Contract, WALLET_ADDRESS])) / 10 ** Token0.decimals - 0.001, 0)   // non stable asset
+    token1Balance = Math.max(Number(await errCatcher(getBalance, [token1Contract, WALLET_ADDRESS])) / 10 ** Token1.decimals - 0.001, 0)
     let lowerTick = priceToTick(currPrice * ((100 - width) / 100))
     let upperTick = priceToTick(currPrice * ((100 + width) / 100))
     let lowerPrice = currPrice * ((100 - width) / 100)
     let upperPrice = currPrice * ((100 + width) / 100)
-    widthInTicks = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
+    let widthInTicks = Math.round(Math.abs((lowerTick - upperTick) / 2) / poolImmutables.tickSpacing, 0)
     console.log(lowerPrice, upperPrice, Date.now(), token0Balance, token1Balance, currPrice, tokenForAAVEBalance, healthFactor)
 
     await doc.useServiceAccountAuth(creds)
@@ -204,8 +204,8 @@ async function run(args){
             await errCatcher(removeAndBurn, [WALLET_ADDRESS, WALLET_SECRET]) 
 
             userSummary = await errCatcher(getUserSummary, [WALLET_ADDRESS])
-            token0Balance = Number(await errCatcher(getBalance, [token0Contract, WALLET_ADDRESS])) / 10 ** Token0.decimals - 0.001   // non stable asset
-            token1Balance = Number(await errCatcher(getBalance, [token1Contract, WALLET_ADDRESS])) / 10 ** Token1.decimals - 0.001
+            token0Balance = Math.max(Number(await errCatcher(getBalance, [token0Contract, WALLET_ADDRESS])) / 10 ** Token0.decimals - 0.001, 0)   // non stable asset
+            token1Balance = Math.max(Number(await errCatcher(getBalance, [token1Contract, WALLET_ADDRESS])) / 10 ** Token1.decimals - 0.001, 0)
             sumBalance = token0Balance * currPrice + token1Balance
             deltaCollateral = (targetHealthFactor * (sumBalance - Number(userSummary.totalBorrowsUSD)) - Number(userSummary.totalCollateralUSD)) / (1 + targetHealthFactor)
             deltaBorrowing = 2 / targetHealthFactor * (Number(userSummary.totalCollateralUSD) + deltaCollateral) - sumBalance + deltaCollateral
@@ -242,14 +242,14 @@ async function run(args){
             }
 
             userSummary = await errCatcher(getUserSummary, [WALLET_ADDRESS])
-            token0Balance = Number(await errCatcher(getBalance, [token0Contract, WALLET_ADDRESS])) / 10 ** Token0.decimals - 0.001   // non stable asset
-            token1Balance = Number(await errCatcher(getBalance, [token1Contract, WALLET_ADDRESS])) / 10 ** Token1.decimals - 0.001
+            token0Balance = Math.max(Number(await errCatcher(getBalance, [token0Contract, WALLET_ADDRESS])) / 10 ** Token0.decimals - 0.001, 0)   // non stable asset
+            token1Balance = Math.max(Number(await errCatcher(getBalance, [token1Contract, WALLET_ADDRESS])) / 10 ** Token1.decimals - 0.001, 0)
 
             lowerTick = priceToTick(currPrice * ((100 - width) / 100))
             upperTick = priceToTick(currPrice * ((100 + width) / 100))
             lowerPrice = currPrice * ((100 - width) / 100)
             upperPrice = currPrice * ((100 + width) / 100)
-            widthInTicks = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
+            widthInTicks = Math.round(Math.abs((lowerTick - upperTick) / 2) / poolImmutables.tickSpacing, 0)
             console.log(lowerPrice, upperPrice, Date.now(), token0Balance, token1Balance, currPrice, userSummary.totalCollateralUSD, userSummary.healthFactor, deltaCollateral, deltaBorrowing) 
 
             await sheet.addRow({ lowerBound: lowerPrice.toFixed(6), upperBound: upperPrice.toFixed(6) , UnixTime: Date.now(), 
