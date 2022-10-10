@@ -187,7 +187,7 @@ async function run(args){
     console.log(lowerPrice, upperPrice, Date.now(), token0Balance, token1Balance, currPrice, tokenForAAVEBalance, healthFactor)
 
     await doc.useServiceAccountAuth(creds)
-    const sheet = await doc.addSheet({ title: 'hourly test', headerValues: ['lowerBound', 'upperBound', 'UnixTime', 'dateTime', 'token0Balance', 'token1Balance', 'currentPrice', 'AAVECollateral', 'healthFactor', 'total'] })
+    const sheet = await doc.addSheet({ title: 'current test', headerValues: ['lowerBound', 'upperBound', 'UnixTime', 'dateTime', 'token0Balance', 'token1Balance', 'currentPrice', 'AAVECollateral', 'healthFactor', 'total'] })
 
     await sheet.addRow({ lowerBound: lowerPrice.toFixed(6), upperBound: upperPrice.toFixed(6), UnixTime: Date.now(), dateTime: Date(Date.now()),
     token0Balance: token0Balance.toFixed(2), token1Balance: token1Balance.toFixed(2), currentPrice: currPrice.toFixed(6), AAVECollateral: tokenForAAVEBalance.toFixed(2), healthFactor: healthFactor.toFixed(3),
