@@ -179,7 +179,18 @@ async function run(args){
     currPrice = poolState.sqrtPriceX96 * poolState.sqrtPriceX96 * (10 ** Token0.decimals) / (10 ** Token1.decimals) / 2 ** 192
     await errCatcher(borrow, [Token0.address, ethers.utils.parseUnits((tokenForAAVEBalance / targetHealthFactor / currPrice).toFixed(6).toString(), Token0.decimals), 2, 0, WALLET_ADDRESS, WALLET_SECRET])
 
-    let width = Number(ATR.stdout)
+    // let width = Number(ATR.stdout)
+    doLoop = true
+    do { 
+        try {
+            let width = Number(ATR.stdout)
+            doLoop = false
+        } catch (err) {
+            console.log(err)
+            await timer(10000)
+        }
+    } while (doLoop)
+
     token0Balance = Math.max(Number(await errCatcher(getBalance, [token0Contract, WALLET_ADDRESS])) / 10 ** Token0.decimals - 0.001, 0)   // non stable asset
     token1Balance = Math.max(Number(await errCatcher(getBalance, [token1Contract, WALLET_ADDRESS])) / 10 ** Token1.decimals - 0.001, 0)
     let lowerPrice = currPrice - width
@@ -248,7 +259,17 @@ async function run(args){
             token0Balance = Math.max(Number(await errCatcher(getBalance, [token0Contract, WALLET_ADDRESS])) / 10 ** Token0.decimals - 0.001, 0)   // non stable asset
             token1Balance = Math.max(Number(await errCatcher(getBalance, [token1Contract, WALLET_ADDRESS])) / 10 ** Token1.decimals - 0.001, 0)
 
-            width = Number(ATR.stdout)
+            // width = Number(ATR.stdout)
+            doLoop = true
+            do { 
+                try {
+                    width = Number(ATR.stdout)
+                    doLoop = false
+                } catch (err) {
+                    console.log(err)
+                    await timer(10000)
+                }
+            } while (doLoop)
             let lowerPrice = currPrice - width
             let upperPrice = currPrice + width
             let lowerTick = priceToTick(lowerPrice)
