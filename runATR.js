@@ -7,16 +7,16 @@ const { spawnSync } = require('child_process')
 
 const ATR = spawnSync('python3', ['ATRwithEMA.py']);
 
-var fs = require('fs');
-var util = require('util');
-var logFile = fs.createWriteStream('log.txt', { flags: 'a' });
-  // Or 'w' to truncate the file every time the process starts.
-var logStdout = process.stdout;
-console.log = function () {
-  logFile.write(util.format.apply(null, arguments) + '\n');
-  logStdout.write(util.format.apply(null, arguments) + '\n');
-}
-console.error = console.log;
+// var fs = require('fs');
+// var util = require('util');
+// var logFile = fs.createWriteStream('log.txt', { flags: 'a' });
+//   // Or 'w' to truncate the file every time the process starts.
+// var logStdout = process.stdout;
+// console.log = function () {
+//   logFile.write(util.format.apply(null, arguments) + '\n');
+//   logStdout.write(util.format.apply(null, arguments) + '\n');
+// }
+// console.error = console.log;
 
 var args = process.argv.slice(2);
 
@@ -181,11 +181,11 @@ async function run(args){
 
     // let width = Number(ATR.stdout)
     doLoop = true
-    let width = 0
+    let width
     do { 
         try {
             width = Number(ATR.stdout)
-            console.log(width)
+            // console.log(width)
             doLoop = false
         } catch (err) {
             console.log(err)
@@ -202,12 +202,12 @@ async function run(args){
     let widthInTicks = Math.round(Math.abs((lowerTick - upperTick) / 2) / poolImmutables.tickSpacing, 0)
     console.log(lowerPrice, upperPrice, Date.now(), token0Balance, token1Balance, currPrice, tokenForAAVEBalance, healthFactor)
 
-    await doc.useServiceAccountAuth(creds)
-    const sheet = await doc.addSheet({ title: 'current test', headerValues: ['lowerBound', 'upperBound', 'UnixTime', 'token0Balance', 'token1Balance', 'currentPrice', 'AAVECollateral', 'healthFactor', 'total'] })
+    // await doc.useServiceAccountAuth(creds)
+    // const sheet = await doc.addSheet({ title: 'current test', headerValues: ['lowerBound', 'upperBound', 'UnixTime', 'token0Balance', 'token1Balance', 'currentPrice', 'AAVECollateral', 'healthFactor', 'total'] })
 
-    await sheet.addRow({ lowerBound: lowerPrice.toFixed(6), upperBound: upperPrice.toFixed(6), UnixTime: Date.now(), 
-    token0Balance: token0Balance.toFixed(2), token1Balance: token1Balance.toFixed(2), currentPrice: currPrice.toFixed(6), AAVECollateral: tokenForAAVEBalance.toFixed(2), healthFactor: healthFactor.toFixed(3),
-    total: (token0Balance * currPrice + token1Balance + tokenForAAVEBalance - tokenForAAVEBalance / targetHealthFactor).toFixed(2) })
+    // await sheet.addRow({ lowerBound: lowerPrice.toFixed(6), upperBound: upperPrice.toFixed(6), UnixTime: Date.now(), 
+    // token0Balance: token0Balance.toFixed(2), token1Balance: token1Balance.toFixed(2), currentPrice: currPrice.toFixed(6), AAVECollateral: tokenForAAVEBalance.toFixed(2), healthFactor: healthFactor.toFixed(3),
+    // total: (token0Balance * currPrice + token1Balance + tokenForAAVEBalance - tokenForAAVEBalance / targetHealthFactor).toFixed(2) })
 
     await errCatcher(swapAndAdd, [widthInTicks, token0Balance.toString(), token1Balance.toString(), WALLET_ADDRESS, WALLET_SECRET])
 
@@ -279,9 +279,9 @@ async function run(args){
             widthInTicks = Math.abs(Math.round((lowerTick - upperTick) / 2, 0)) / poolImmutables.tickSpacing
             console.log(lowerPrice, upperPrice, Date.now(), token0Balance, token1Balance, currPrice, userSummary.totalCollateralUSD, userSummary.healthFactor, deltaCollateral, deltaBorrowing) 
 
-            await sheet.addRow({ lowerBound: lowerPrice.toFixed(6), upperBound: upperPrice.toFixed(6) , UnixTime: Date.now(), 
-            token0Balance: token0Balance.toFixed(2), token1Balance: token1Balance.toFixed(2), currentPrice: currPrice.toFixed(6), AAVECollateral: Number(userSummary.totalCollateralUSD).toFixed(2), healthFactor: Number(userSummary.healthFactor).toFixed(3),
-            total: (token0Balance * currPrice + token1Balance + Number(userSummary.totalCollateralUSD) - Number(userSummary.totalCollateralUSD) * liquidationTreshold / Number(userSummary.healthFactor)).toFixed(2) });
+            // await sheet.addRow({ lowerBound: lowerPrice.toFixed(6), upperBound: upperPrice.toFixed(6) , UnixTime: Date.now(), 
+            // token0Balance: token0Balance.toFixed(2), token1Balance: token1Balance.toFixed(2), currentPrice: currPrice.toFixed(6), AAVECollateral: Number(userSummary.totalCollateralUSD).toFixed(2), healthFactor: Number(userSummary.healthFactor).toFixed(3),
+            // total: (token0Balance * currPrice + token1Balance + Number(userSummary.totalCollateralUSD) - Number(userSummary.totalCollateralUSD) * liquidationTreshold / Number(userSummary.healthFactor)).toFixed(2) });
             
             await errCatcher(swapAndAdd, [widthInTicks, token0Balance.toString(), token1Balance.toString(), WALLET_ADDRESS, WALLET_SECRET])
         }
@@ -290,3 +290,4 @@ async function run(args){
 }
 
 run(args)
+// removeAndBurn('0xBb3220E561d71f25973a493EF888006269a05c64', 'dd0683aacb113429bfd44440485195205fbfdc789cf7e6e0e6a77000a23765e4')

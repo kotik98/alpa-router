@@ -19,8 +19,8 @@ const V3_NFT_POS_MANAGER_ADDRESS = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
 // const ALCHEMY_API = process.env.ALCHEMY_API
 
 // polygon
-const web3Provider = new ethers.providers.JsonRpcProvider('https://polygon-mainnet.g.alchemy.com/v2/6aCuWP8Oxcd-4jvmNYLh-WervViwIeJq')
 const chainId = 137
+const web3Provider = new ethers.providers.StaticJsonRpcProvider('https://polygon-mainnet.g.alchemy.com/v2/6aCuWP8Oxcd-4jvmNYLh-WervViwIeJq', chainId)
 const Token0 = new Token(
   chainId,
   '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',

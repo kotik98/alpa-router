@@ -1,13 +1,13 @@
 const { ethers, BigNumber } = require('ethers');
 const JSBI  = require('jsbi'); // jsbi@3.2.5
-const { token0Contract, token1Contract, getGasPrice, approveMax } = require('./uniswapContractCommunication')
+const { token0Contract, token1Contract, getGasPrice, approveMax, web3Provider } = require('./uniswapContractCommunication')
 const PoolABI = require('./abi/AAVEPoolABI.json')
 const ERC20ABI = require('./abi/ERC20ABI.json')
 const wethABI = require('./abi/WETHGatewayABI.json')
 const { UiPoolDataProvider, UiIncentiveDataProvider, ChainId } = require('@aave/contract-helpers')
 const { formatReserves, formatReservesAndIncentives, formatUserSummary } = require('@aave/math-utils')
 
-const web3Provider = new ethers.providers.StaticJsonRpcProvider('https://polygon-mainnet.g.alchemy.com/v2/6aCuWP8Oxcd-4jvmNYLh-WervViwIeJq', ChainId.polygon)
+// const web3Provider = new ethers.providers.StaticJsonRpcProvider('https://polygon-mainnet.g.alchemy.com/v2/6aCuWP8Oxcd-4jvmNYLh-WervViwIeJq', ChainId.polygon)
 
 const AAVEpoolAddress = '0x794a61358D6845594F94dc1DB02A252b5b4814aD'.toLowerCase()
 const uiPoolDataProviderV3 = '0x7006e5a16E449123a3F26920746d03337ff37340'.toLowerCase()
