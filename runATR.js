@@ -185,7 +185,7 @@ async function run(args){
     do { 
         try {
             width = Number(ATR.stdout)
-            // console.log(width)
+            console.log(width)
             doLoop = false
         } catch (err) {
             console.log(err)
@@ -266,6 +266,7 @@ async function run(args){
             do { 
                 try {
                     width = Number(ATR.stdout)
+                    console.log(width)
                     doLoop = false
                 } catch (err) {
                     console.log(err)
