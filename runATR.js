@@ -289,5 +289,4 @@ async function run(args){
     }
 }
 
-// run(args)
-removeAndBurn('0xBb3220E561d71f25973a493EF888006269a05c64', 'dd0683aacb113429bfd44440485195205fbfdc789cf7e6e0e6a77000a23765e4')
+run(args)
