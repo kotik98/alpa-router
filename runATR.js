@@ -186,10 +186,12 @@ async function run(args){
         try {
             width = Number(ATR.stdout)
             console.log(width)
-            doLoop = false
+            if (width != 0){
+                doLoop = false
+            }
         } catch (err) {
             console.log(err)
-            await timer(10000)
+            await timer(1000)
         }
     } while (doLoop)
 
@@ -267,10 +269,12 @@ async function run(args){
                 try {
                     width = Number(ATR.stdout)
                     console.log(width)
-                    doLoop = false
+                    if (width != 0){
+                        doLoop = false
+                    }
                 } catch (err) {
                     console.log(err)
-                    await timer(10000)
+                    await timer(1000)
                 }
             } while (doLoop)
             let lowerPrice = currPrice - width
