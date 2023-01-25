@@ -133,15 +133,15 @@ async function run(args){
     const WALLET_SECRET = args[3]
 
     // // approves for uniswap communication
-    // await errCatcher(approveMax, [token0Contract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET])
-    // await errCatcher(approveMax, [token1Contract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET])
-    // await errCatcher(approveMax, [tokenForAAVEContract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET])
+    await errCatcher(approveMax, [token0Contract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET])
+    await errCatcher(approveMax, [token1Contract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET])
+    await errCatcher(approveMax, [tokenForAAVEContract, V3_SWAP_ROUTER_ADDRESS, WALLET_SECRET])
 
     // // approve for supply on aave
-    // await errCatcher(approveMax, [tokenForAAVEContract, AAVEpoolAddress, WALLET_SECRET])
+    await errCatcher(approveMax, [tokenForAAVEContract, AAVEpoolAddress, WALLET_SECRET])
 
     // // approve for repay on aave
-    // await errCatcher(approveMax, [token0Contract, AAVEpoolAddress, WALLET_SECRET])
+    await errCatcher(approveMax, [token0Contract, AAVEpoolAddress, WALLET_SECRET])
 
     let epsilon = 0.1    // allowable missmatch in USD
     let liquidationTreshold = 0.85    // liq treshold for collateral
