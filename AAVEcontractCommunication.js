@@ -102,8 +102,8 @@ async function supply(assetAddress, amount, referralCode, wallet){
         gasPrice: gasPrice,
         gasLimit: ethers.utils.hexlify(500000)
     }
-    return await wallet.sendTransaction(transaction).then(function(transaction) {
-        return transaction.wait();
+    return await wallet.sendTransaction(transaction).then(async function(transaction) {
+        return await transaction.wait();
     })
 }
 
@@ -119,8 +119,8 @@ async function withdraw(assetAddress, amount, wallet){
         gasPrice: gasPrice,
         gasLimit: ethers.utils.hexlify(500000)
     }
-    return await wallet.sendTransaction(transaction).then(function(transaction) {
-        return transaction.wait();
+    return await wallet.sendTransaction(transaction).then(async function(transaction) {
+        return await transaction.wait();
     })
 }
 
@@ -136,8 +136,8 @@ async function borrow(assetAddress, amount, interestRateMode, referralCode, wall
         gasPrice: gasPrice,
         gasLimit: ethers.utils.hexlify(500000)
     }
-    return await wallet.sendTransaction(transaction).then(function(transaction) {
-        return transaction.wait();
+    return await wallet.sendTransaction(transaction).then(async function(transaction) {
+        return await transaction.wait();
     })
 }
 
@@ -153,8 +153,8 @@ async function repay(assetAddress, amount, RateMode, wallet){
         gasPrice: gasPrice,
         gasLimit: ethers.utils.hexlify(500000)
     }
-    return await wallet.sendTransaction(transaction).then(function(transaction) {
-        return transaction.wait();
+    return await wallet.sendTransaction(transaction).then(async function(transaction) {
+        return await transaction.wait();
     })
 }
 

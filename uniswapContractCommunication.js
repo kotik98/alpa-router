@@ -145,8 +145,8 @@ async function swapAndAdd(width, token0Amount, token1Amount, wallet) {
             gasPrice: gasPrice,
             gasLimit: ethers.utils.hexlify(1000000)
         }
-        return await wallet.sendTransaction(transaction).then(function(transaction) {
-            return transaction.wait();
+        return await wallet.sendTransaction(transaction).then(async function(transaction) {
+            return await transaction.wait();
         })
     }
 
@@ -211,8 +211,8 @@ async function removeAndBurn(wallet){
             gasPrice: gasPrice,
             gasLimit: BigNumber.from('100000')
         }
-        await wallet.sendTransaction(transaction).then(function(transaction) {
-            return transaction.wait();
+        await wallet.sendTransaction(transaction).then(async function(transaction) {
+            return await transaction.wait();
         })
 
         gasPrice = await getGasPrice(gasStationUrl);
@@ -224,8 +224,8 @@ async function removeAndBurn(wallet){
             gasPrice: gasPrice,
             gasLimit: BigNumber.from('500000')
         };
-        return await wallet.sendTransaction(transaction).then(function(transaction) {
-            return transaction.wait();
+        return await wallet.sendTransaction(transaction).then(async function(transaction) {
+            return await transaction.wait();
         })
     }
 }
@@ -247,8 +247,8 @@ async function approveMax(tokenContract, to, WALLET_SECRET) {
             gasPrice: gasPrice,
             gasLimit: BigNumber.from('100000')
         }
-    ).then(function(transaction) {
-        return transaction.wait();
+    ).then(async function(transaction) {
+        return await transaction.wait();
     })
 }
 
@@ -275,8 +275,8 @@ async function swap(inputToken, outputToken, amount, wallet) {
         gasPrice: BigNumber.from(route.gasPriceWei),
         gasLimit: ethers.utils.hexlify(1000000)
     }
-    return await wallet.sendTransaction(transaction).then(function(transaction) {
-        return transaction.wait();
+    return await wallet.sendTransaction(transaction).then(async function(transaction) {
+        return await transaction.wait();
     })
 }
 
