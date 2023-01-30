@@ -230,8 +230,8 @@ async function removeAndBurn(wallet){
     }
 }
 
-async function getBalance(tokenContract, wallet){
-    return await tokenContract.balanceOf(wallet.address)
+async function getBalance(tokenContract, address){
+    return await tokenContract.balanceOf(address)
 }
 
 async function approveMax(tokenContract, to, WALLET_SECRET) {

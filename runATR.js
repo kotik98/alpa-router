@@ -3,6 +3,8 @@ const { GoogleSpreadsheet } = require('google-spreadsheet');
 const doc = new GoogleSpreadsheet('1RTCS-IDEs0b-mGRYIVrBhTNIS-wVTMU02TF8OWruFHA')
 const creds = require("./credentials.json")
 const { ethers, BigNumber } = require('ethers')
+require('dotenv').config()
+const { SAFE_ADDRESS } = process.env;
 const { spawnSync } = require('child_process')
 
 const ATR = spawnSync('python3', ['ATRwithEMA.py']);
@@ -152,9 +154,9 @@ async function run(args){
     let poolState = await errCatcher(getPoolState, [])
     let poolImmutables = await errCatcher(getPoolImmutables, [])
     let currPrice = poolState.sqrtPriceX96 * poolState.sqrtPriceX96 * (10 ** Token0.decimals) / (10 ** Token1.decimals) / 2 ** 192
-    let token0Balance = Number(await errCatcher(getBalance, [token0Contract, wallet])) / 10 ** Token0.decimals   // non stable asset
-    let token1Balance = Number(await errCatcher(getBalance, [token1Contract, wallet])) / 10 ** Token1.decimals
-    let tokenForAAVEBalance = Number(await errCatcher(getBalance, [tokenForAAVEContract, wallet])) / 10 ** tokenForAAVE.decimals
+    let token0Balance = Number(await errCatcher(getBalance, [token0Contract, SAFE_ADDRESS])) / 10 ** Token0.decimals   // non stable asset
+    let token1Balance = Number(await errCatcher(getBalance, [token1Contract, SAFE_ADDRESS])) / 10 ** Token1.decimals
+    let tokenForAAVEBalance = Number(await errCatcher(getBalance, [tokenForAAVEContract, SAFE_ADDRESS])) / 10 ** tokenForAAVE.decimals
     let delta = (targetHealthFactor * (token0Balance * currPrice + token1Balance) - tokenForAAVEBalance) / (1 + targetHealthFactor)
     delta = delta.toFixed(6)
 
@@ -173,7 +175,7 @@ async function run(args){
         }
     }
 
-    tokenForAAVEBalance = Number(await errCatcher(getBalance, [tokenForAAVEContract, wallet])) / 10 ** tokenForAAVE.decimals
+    tokenForAAVEBalance = Number(await errCatcher(getBalance, [tokenForAAVEContract, SAFE_ADDRESS])) / 10 ** tokenForAAVE.decimals
     await errCatcher(supply, [tokenForAAVE.address,  ethers.utils.parseUnits(tokenForAAVEBalance.toString(), tokenForAAVE.decimals), 0, wallet])
 
     poolState = await errCatcher(getPoolState, [])
@@ -196,8 +198,8 @@ async function run(args){
         }
     } while (doLoop)
 
-    token0Balance = Math.max(Number(await errCatcher(getBalance, [token0Contract, wallet])) / 10 ** Token0.decimals - 0.001, 0)   // non stable asset
-    token1Balance = Math.max(Number(await errCatcher(getBalance, [token1Contract, wallet])) / 10 ** Token1.decimals - 0.001, 0)
+    token0Balance = Math.max(Number(await errCatcher(getBalance, [token0Contract, SAFE_ADDRESS])) / 10 ** Token0.decimals - 0.001, 0)   // non stable asset
+    token1Balance = Math.max(Number(await errCatcher(getBalance, [token1Contract, SAFE_ADDRESS])) / 10 ** Token1.decimals - 0.001, 0)
     let lowerPrice = currPrice - width
     let upperPrice = currPrice + width
     let lowerTick = priceToTick(lowerPrice)
@@ -222,9 +224,9 @@ async function run(args){
         if (upperTick < priceToTick(currPrice) || priceToTick(currPrice) < lowerTick) {
             await errCatcher(removeAndBurn, [wallet]) 
 
-            userSummary = await errCatcher(getUserSummary, [WALLET_ADDRESS])
-            token0Balance = Math.max(Number(await errCatcher(getBalance, [token0Contract, wallet])) / 10 ** Token0.decimals - 0.001, 0)   // non stable asset
-            token1Balance = Math.max(Number(await errCatcher(getBalance, [token1Contract, wallet])) / 10 ** Token1.decimals - 0.001, 0)
+            userSummary = await errCatcher(getUserSummary, [SAFE_ADDRESS])
+            token0Balance = Math.max(Number(await errCatcher(getBalance, [token0Contract, SAFE_ADDRESS])) / 10 ** Token0.decimals - 0.001, 0)   // non stable asset
+            token1Balance = Math.max(Number(await errCatcher(getBalance, [token1Contract, SAFE_ADDRESS])) / 10 ** Token1.decimals - 0.001, 0)
             sumBalance = token0Balance * currPrice + token1Balance
             deltaCollateral = (targetHealthFactor * (sumBalance - Number(userSummary.totalBorrowsUSD)) - Number(userSummary.totalCollateralUSD)) / (1 + targetHealthFactor)
             deltaBorrowing = 2 / targetHealthFactor * (Number(userSummary.totalCollateralUSD) + deltaCollateral) - sumBalance + deltaCollateral
@@ -240,12 +242,12 @@ async function run(args){
                     }
                     await errCatcher(swap, [swapToken, tokenForAAVE, (deltaCollateral).toFixed(6).toString(), wallet])
 
-                    tokenForAAVEBalance = Number(await getBalance(tokenForAAVEContract, wallet)) / 10 ** tokenForAAVE.decimals
+                    tokenForAAVEBalance = Number(await getBalance(tokenForAAVEContract, SAFE_ADDRESS)) / 10 ** tokenForAAVE.decimals
                     await errCatcher(supply, [tokenForAAVE.address, ethers.utils.parseUnits(tokenForAAVEBalance.toFixed(6).toString(), tokenForAAVE.decimals), 0, wallet])
                 } else {
                     await errCatcher(withdraw, [tokenForAAVE.address, ethers.utils.parseUnits(Math.abs(deltaCollateral).toFixed(6).toString(), tokenForAAVE.decimals), wallet])
 
-                    tokenForAAVEBalance = Number(await getBalance(tokenForAAVEContract, wallet)) / 10 ** tokenForAAVE.decimals
+                    tokenForAAVEBalance = Number(await getBalance(tokenForAAVEContract, SAFE_ADDRESS)) / 10 ** tokenForAAVE.decimals
                     await errCatcher(swap, [tokenForAAVE, Token1, tokenForAAVEBalance.toFixed(6).toString(), wallet])
                 }
                 if (deltaBorrowing < 0){
@@ -260,9 +262,9 @@ async function run(args){
 
             }
 
-            userSummary = await errCatcher(getUserSummary, [wallet])
-            token0Balance = Math.max(Number(await errCatcher(getBalance, [token0Contract, wallet])) / 10 ** Token0.decimals - 0.001, 0)   // non stable asset
-            token1Balance = Math.max(Number(await errCatcher(getBalance, [token1Contract, wallet])) / 10 ** Token1.decimals - 0.001, 0)
+            userSummary = await errCatcher(getUserSummary, [SAFE_ADDRESS])
+            token0Balance = Math.max(Number(await errCatcher(getBalance, [token0Contract, SAFE_ADDRESS])) / 10 ** Token0.decimals - 0.001, 0)   // non stable asset
+            token1Balance = Math.max(Number(await errCatcher(getBalance, [token1Contract, SAFE_ADDRESS])) / 10 ** Token1.decimals - 0.001, 0)
 
             // width = Number(ATR.stdout)
             doLoop = true
