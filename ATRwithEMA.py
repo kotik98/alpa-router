@@ -15,7 +15,7 @@ def getATR(symbol, interval, lookback):
     frame = frame.astype(float)
     tr = pd.Series([max(frame.iloc[i][1] - frame.iloc[i][2], frame.iloc[i][1] - frame.iloc[i - 1][3],
                         frame.iloc[i - 1][3] - frame.iloc[i][2]) for i in range(1, len(frame.index))])
-    return trend.ema_indicator(tr, 14).iloc[-1]
+    return trend.ema_indicator(tr, 7).iloc[-1]
 
 
-print(getATR('MATICUSDT', Client.KLINE_INTERVAL_12HOUR, '10'))
+print(getATR('MATICUSDT', Client.KLINE_INTERVAL_3DAY, '30'))
