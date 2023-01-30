@@ -10,7 +10,7 @@ const { abi } = require('@uniswap/v3-core/artifacts/contracts/interfaces/IUniswa
 const JSBI  = require('jsbi'); // jsbi@3.2.5
 const { SwapToRatioStatus } = require("@uniswap/smart-order-router");
 const fetch = require("node-fetch"); // node-fetch@1.7.3
-const { module_abi } =  require('./abi/WhitelistingModuleV2.json')
+const { abi: module_abi } =  require('./abi/WhitelistingModuleV2.json')
 
 require('dotenv').config()
 const { V3_SWAP_ROUTER_ADDRESS, V3_NFT_POS_MANAGER_ADDRESS, SAFE_ADDRESS, WMATIC_ADDRESS, USDT_ADDRESS, USDC_ADDRESS, POOL_ADDRESS, ALCHEMY_API, gasStationUrl, MODULE_ADDRESS } = process.env;
@@ -41,7 +41,7 @@ const tokenForAAVE = new Token(
 );
 
 const ERC20ABI = require('./abi/ERC20ABI.json')
-const iface = new ethers.utils.Interface(module_abi.abi)
+const iface = new ethers.utils.Interface(module_abi)
 const token0Contract = new ethers.Contract(Token0.address, ERC20ABI, web3Provider)
 const token1Contract = new ethers.Contract(Token1.address, ERC20ABI, web3Provider)
 const tokenForAAVEContract = new ethers.Contract(tokenForAAVE.address, ERC20ABI, web3Provider)

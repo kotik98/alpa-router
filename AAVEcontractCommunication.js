@@ -4,14 +4,14 @@ const { token0Contract, token1Contract, getGasPrice, approveMax, web3Provider } 
 const PoolABI = require('./abi/AAVEPoolABI.json')
 const ERC20ABI = require('./abi/ERC20ABI.json')
 const wethABI = require('./abi/WETHGatewayABI.json')
-const { module_abi } =  require('./abi/WhitelistingModuleV2.json')
+const { abi: module_abi } =  require('./abi/WhitelistingModuleV2.json')
 const { UiPoolDataProvider, UiIncentiveDataProvider, ChainId } = require('@aave/contract-helpers')
 const { formatReserves, formatReservesAndIncentives, formatUserSummary } = require('@aave/math-utils')
 
 require('dotenv').config()
 const { SAFE_ADDRESS, gasStationUrl, MODULE_ADDRESS, AAVEpoolAddress, uiPoolDataProviderV3, uiIncentiveDataProviderV3, lendingPoolAddressProvider } = process.env;
 
-const iface = new ethers.utils.Interface(module_abi.abi)
+const iface = new ethers.utils.Interface(module_abi)
 const poolIface = new ethers.utils.Interface(PoolABI)
 // const pool = new ethers.Contract(AAVEpoolAddress, PoolABI, web3Provider)
 // const borrowingTokenContract = token0Contract
