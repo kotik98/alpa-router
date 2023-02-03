@@ -32,11 +32,15 @@ function priceToTick(price) {
 
 async function errCatcher(f, arguments) {
     doLoop = true
+    logged = false
     do { 
         try {
             return await f.apply(this, arguments)
         } catch (err) {
-            // console.log(err)
+            if (!logged){
+                console.log(err)
+                logged = true
+            }
             await timer(180000)
         }
     } while (doLoop)

@@ -1,0 +1,3 @@
+C:\Users\zahar\Desktop\vscode_projs\alpa-router\node_modules\@ethersproject\contracts\node_modules\@ethersproject\logger\src.ts\index.ts:269
+        const error: any = new Error(message);
+                           ^

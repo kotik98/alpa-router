@@ -162,9 +162,9 @@ async function removeAndBurn(wallet){
 
     const NftPosManagerContract = new ethers.Contract(V3_NFT_POS_MANAGER_ADDRESS, NftPosManagerABI, web3Provider)
 
-    if (Number(NftPosManagerContract.balanceOf(SAFE_ADDRESS)) > 0){
+    if (Number(await NftPosManagerContract.balanceOf(SAFE_ADDRESS)) > 0){
 
-        const tokenId = await NftPosManagerContract.tokenOfOwnerByIndex(wallet.address, 0)
+        const tokenId = await NftPosManagerContract.tokenOfOwnerByIndex(SAFE_ADDRESS, 0)
         const positiondata = await NftPosManagerContract.positions(tokenId)
         
         const [immutables, state] = await Promise.all([getPoolImmutables(), getPoolState()])
